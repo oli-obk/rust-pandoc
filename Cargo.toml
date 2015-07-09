@@ -3,6 +3,7 @@ name = "pandoc"
 version = "0.1.0"
 authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>"]
 readme = "README.md"
+keywords = ["latex", "markdown"]
 
 [dependencies]
 itertools = "*"
