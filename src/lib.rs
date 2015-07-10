@@ -37,7 +37,7 @@ use std::process::Command;
 use std::env;
 
 /// equivalent to the latex document class
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DocumentClass {
     /// compact form of report
     Article,
@@ -60,7 +60,7 @@ impl DocumentClass {
 }
 
 /// typesafe access to -t FORMAT, -w FORMAT, --to=FORMAT, --write=FORMAT
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum OutputFormat {
     /// native Haskell
     Native,
@@ -187,7 +187,7 @@ impl OutputFormat {
 }
 
 /// typesafe access to -f FORMAT, -r FORMAT, --from=FORMAT, --read=FORMAT
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum InputFormat {
     /// native Haskell
     Native,
@@ -231,7 +231,36 @@ pub enum InputFormat {
     Latex,
 }
 
+impl InputFormat {
+    fn pandoc_name(&self) -> &'static str {
+        use InputFormat::*;
+        match *self {
+            Native => "native",
+            Json => "json",
+            Markdown => "markdown",
+            MarkdownStrict => "markdown_strict",
+            MarkdownPhpextra => "markdown_phpextra",
+            MarkdownGithub => "markdown_github",
+            Commonmark => "commonmark",
+            Rst => "rst",
+            Html => "html",
+            Latex => "latex",
+            MediaWiki => "mediawiki",
+            Textile => "textile",
+            Org => "org",
+            Opml => "opml",
+            Docx => "docx",
+            Haddock => "haddock",
+            Epub => "epub",
+            DocBook => "docbook",
+            T2t => "t2t",
+            Twiki => "twiki",
+        }
+    }
+}
+
 #[allow(missing_docs)]
+#[derive(Debug, Clone)]
 pub enum MarkdownExtensions {
     EscapedLineBreaks,
     BlankBeforeHeader,
@@ -287,11 +316,25 @@ pub enum MarkdownExtensions {
     CompactDefinitionLists,
 }
 
+#[derive(Clone, Debug)]
+enum InputKind {
+    Files(Vec<String>),
+    /// passed to the pandoc through stdin
+    Pipe(String),
+}
+
+#[derive(Clone, Debug)]
+enum OutputKind {
+    File(String),
+    Pipe,
+}
+
 /// the argument builder
-#[derive(Debug, Default)]
+#[derive(Default, Clone)]
 pub struct Pandoc {
-    inputs: Vec<String>,
-    output: Option<String>,
+    input: Option<InputKind>,
+    input_format: Option<InputFormat>,
+    output: Option<OutputKind>,
     output_format: Option<OutputFormat>,
     latex_path_hint: Vec<String>,
     pandoc_path_hint: Vec<String>,
@@ -304,6 +347,8 @@ pub struct Pandoc {
     template: Option<String>,
     variables: Vec<(String, String)>,
     slide_level: Option<usize>,
+    filters: Vec<fn(String) -> String>,
+    args: Vec<(String, String)>,
 }
 
 use std::convert::Into;
@@ -333,15 +378,28 @@ impl Pandoc {
     pub fn set_output_format(&mut self, format: OutputFormat) {
         self.output_format = Some(format);
     }
+    /// sets or overwrites the input format
+    pub fn set_input_format(&mut self, format: InputFormat) {
+        self.input_format = Some(format);
+    }
 
     /// adds more input files, the order is relevant
     /// the order of adding the files is the order in which they are processed
     pub fn add_input<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.inputs.push(filename.into().into_owned());
+        let filename = filename.into().into_owned();
+        match self.input {
+            Some(InputKind::Files(ref mut files)) => {
+                files.push(filename);
+            },
+            None => {
+                self.input = Some(InputKind::Files(vec![filename]));
+            },
+            _ => unreachable!(),
+        }
     }
     /// sets or overwrites the output filename
     pub fn set_output<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.output = Some(filename.into().into_owned());
+        self.output = Some(OutputKind::File(filename.into().into_owned()));
     }
 
     /// filename of the bibliography database
@@ -372,14 +430,18 @@ impl Pandoc {
         self.variables.push((key.into().into_owned(), value.into().into_owned()));
     }
 
-    fn cmd(self) -> Command {
+    /// closures that take a json string and return a json string
+    pub fn add_filter(&mut self, filter: fn(String) -> String) {
+        self.filters.push(filter);
+    }
+
+    fn run(self) -> Result<Vec<u8>, PandocError> {
         let mut cmd = Command::new("pandoc");
-        for input in self.inputs {
-            cmd.arg(input);
-        }
-        cmd.arg("-o").arg(self.output.expect("no output file specified"));
         if let Some(format) = self.output_format {
-            cmd.arg(format!("--write={}", format.pandoc_name()));
+            cmd.arg("-t").arg(format.pandoc_name());
+        }
+        if let Some(format) = self.input_format {
+            cmd.arg("-f").arg(format.pandoc_name());
         }
         if let Some(filename) = self.bibliography {
             cmd.arg(format!("--bibliography={}", filename));
@@ -399,6 +461,9 @@ impl Pandoc {
         for (key, val) in self.variables {
             cmd.arg("--variable").arg(format!("{}={}", key, val));
         }
+        for (key, val) in self.args {
+            cmd.arg(format!("--{}={}", key, val));
+        }
         if let Some(doc_class) = self.document_class {
             cmd.arg("--variable").arg(format!("documentclass={}", doc_class.pandoc_name()));
         }
@@ -414,30 +479,74 @@ impl Pandoc {
             .intersperse(";")
             .collect();
         cmd.env("PATH", path);
-        cmd
+        let output = try!(self.output.ok_or(PandocError::NoOutputSpecified));
+        let input = try!(self.input.ok_or(PandocError::NoInputSpecified));
+        let input = match input {
+            InputKind::Files(files) => {
+                for file in files {
+                    cmd.arg(file);
+                }
+                String::new()
+            },
+            InputKind::Pipe(text) => {
+                cmd.stdin(std::process::Stdio::piped());
+                text
+            },
+        };
+        match output {
+            OutputKind::File(filename) => {
+                cmd.arg("-o").arg(filename);
+            },
+            OutputKind::Pipe => {
+                cmd.stdout(std::process::Stdio::piped());
+            },
+        }
+        println!("{:?}", cmd);
+        let mut child = try!(cmd.spawn());
+        if let Some(ref mut stdin) = child.stdin {
+            try!(stdin.write_all(input.as_bytes()));
+        }
+        let o = try!(child.wait_with_output());
+        if o.status.success() {
+            Ok(o.stdout)
+        } else {
+            Err(PandocError::Err(o))
+        }
+    }
+
+    fn arg<'a, T: Into<Cow<'a, str>>, U: Into<Cow<'a, str>>>(&mut self, key: T, value: U) {
+        self.args.push((key.into().into_owned(), value.into().into_owned()));
     }
 
     /// generate a latex template from the given settings
     /// this function can panic in a lot of places
-    pub fn generate_latex_template<'a, T: Into<Cow<'a, str>>>(self, filename: T) {
+    pub fn generate_latex_template<'a, T: Into<Cow<'a, str>>>(mut self, filename: T) {
         let format = self.output_format.as_ref().map(OutputFormat::pandoc_name).unwrap();
-        let mut cmd = self.cmd();
-        cmd.arg(format!("--print-default-template={}", format));
-        let output = cmd.output().unwrap();
-        assert_eq!(output.status.code().unwrap(), 0);
+        self.arg("print-default-template", format);
+        let output = self.run().unwrap();
         let filename: &str = &filename.into();
         let mut file = std::fs::File::create(filename).unwrap();
-        file.write(&output.stdout).unwrap();
+        file.write_all(&output).unwrap();
     }
 
     /// actually execute pandoc
-    pub fn execute(self) -> Result<(), PandocError> {
-        let mut cmd = self.cmd();
-        match cmd.output() {
-            Err(e) => Err(PandocError::IoErr(e)),
-            Ok(ref o) if o.status.success() => Ok(()),
-            Ok(o) => Err(PandocError::Err(o)),
+    pub fn execute(mut self) -> Result<(), PandocError> {
+        let filters = std::mem::replace(&mut self.filters, Vec::new());
+        if filters.is_empty() {
+            let _ = try!(self.run());
+            return Ok(());
         }
+        let mut pandoc = self.clone();
+        self.output = Some(OutputKind::Pipe);
+        self.output_format = Some(OutputFormat::Json);
+        let o = try!(self.run());
+        let o = String::from_utf8(o).unwrap();
+        // apply all filters
+        let filtered = filters.into_iter().fold(o, |acc, item| item(acc));
+        pandoc.input = Some(InputKind::Pipe(filtered));
+        pandoc.input_format = Some(InputFormat::Json);
+        let _ = try!(pandoc.run());
+        Ok(())
     }
 }
 
@@ -447,6 +556,16 @@ pub enum PandocError {
     IoErr(std::io::Error),
     /// pandoc execution failed, look at the stderr output
     Err(std::process::Output),
+    /// forgot to specify an output file
+    NoOutputSpecified,
+    /// forgot to specify any input files
+    NoInputSpecified,
+}
+
+impl std::convert::From<std::io::Error> for PandocError {
+    fn from(val: std::io::Error) -> Self {
+        PandocError::IoErr(val)
+    }
 }
 
 impl std::fmt::Debug for PandocError {
@@ -457,7 +576,9 @@ impl std::fmt::Debug for PandocError {
                 try!(write!(fmt, "exit_code: {:?}", e.status.code()));
                 try!(write!(fmt, "stdout: {}", String::from_utf8_lossy(&e.stdout)));
                 write!(fmt, "stderr: {}", String::from_utf8_lossy(&e.stderr))
-            }
+            },
+            PandocError::NoOutputSpecified => write!(fmt, "No output file was specified"),
+            PandocError::NoInputSpecified => write!(fmt, "No input files were specified"),
         }
     }
 }
