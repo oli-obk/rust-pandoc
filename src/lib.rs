@@ -560,11 +560,16 @@ pub enum PandocError {
     NoOutputSpecified,
     /// forgot to specify any input files
     NoInputSpecified,
+    /// pandoc executable not found
+    PandocNotFound,
 }
 
 impl std::convert::From<std::io::Error> for PandocError {
-    fn from(val: std::io::Error) -> Self {
-        PandocError::IoErr(val)
+    fn from(err: std::io::Error) -> Self {
+        match err.kind() {
+            std::io::ErrorKind::NotFound => PandocError::PandocNotFound,
+            _ => PandocError::IoErr(err),
+        }
     }
 }
 
@@ -579,6 +584,7 @@ impl std::fmt::Debug for PandocError {
             },
             PandocError::NoOutputSpecified => write!(fmt, "No output file was specified"),
             PandocError::NoInputSpecified => write!(fmt, "No input files were specified"),
+            PandocError::PandocNotFound => write!(fmt, "Pandoc not found, did you forget to install pandoc?"),
         }
     }
 }
