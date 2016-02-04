@@ -1,6 +1,6 @@
 [package]
 name = "pandoc"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>"]
 readme = "README.md"
 keywords = ["latex", "markdown"]
@@ -9,4 +9,4 @@ license-file = "LICENSE"
 description = "a library API that wraps calls to the pandoc executable"
 
 [dependencies]
-itertools = "0.3"
+itertools = "0.4"
