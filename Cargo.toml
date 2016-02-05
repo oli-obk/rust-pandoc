@@ -5,7 +5,7 @@ authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>"]
 readme = "README.md"
 keywords = ["latex", "markdown"]
 repository = "https://github.com/oli-obk/rust-pandoc"
-license-file = "LICENSE"
+license = "MIT/Apache-2.0"
 description = "a library API that wraps calls to the pandoc executable"
 
 [dependencies]
