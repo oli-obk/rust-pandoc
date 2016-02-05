@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/oli-obk/rust-pandoc.svg?branch=master)](https://travis-ci.org/oli-obk/rust-pandoc)
+
 # Instructions
 
 1. [Install pandoc](http://pandoc.org/installing.html)
