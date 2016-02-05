@@ -1,11 +1,11 @@
 [package]
 name = "pandoc"
-version = "0.3.0"
-authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>"]
+version = "0.4.0"
+authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>", "Felix S. Klock II <pnkfelix@pnkfx.org>"]
 readme = "README.md"
 keywords = ["latex", "markdown"]
 repository = "https://github.com/oli-obk/rust-pandoc"
-license-file = "LICENSE"
+license = "MIT/Apache-2.0"
 description = "a library API that wraps calls to the pandoc executable"
 
 [dependencies]
