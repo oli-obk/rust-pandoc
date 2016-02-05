@@ -6,7 +6,7 @@ extern crate itertools;
 use itertools::Itertools;
 
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// path to pandoc executable
 #[cfg(windows)]
@@ -44,17 +44,16 @@ pub enum OutputFormatExt {
     FmtExt(OutputFormat, Vec<MarkdownExtension>),
 }
 
-impl OutputFormatExt {
-    fn render(&self) -> String {
+impl std::fmt::Display for OutputFormatExt {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         match *self {
-            OutputFormatExt::Fmt(ref s) => s.to_string(),
+            OutputFormatExt::Fmt(ref s) => write!(fmt, "{}", s),
             OutputFormatExt::FmtExt(ref s, ref ext) => {
-                let mut s = s.to_string();
+                try!(write!(fmt, "{}", s));
                 for e in ext {
-                    s.push_str("+");
-                    s.push_str(&e.to_string());
+                    try!(write!(fmt, "+{}", e));
                 }
-                s
+                Ok(())
             }
         }
     }
@@ -86,14 +85,14 @@ impl std::fmt::Display for EmailObfuscation {
     }
 }
 
-pub type URL = str;
+pub type URL = String;
 
 #[derive(Clone, Debug)]
-pub enum PandocOption<'a> {
+pub enum PandocOption {
     /// -t FORMAT  --to=FORMAT
     To(OutputFormatExt),
     /// --data-dir=DIRECTORY
-    DataDir(&'a Path),
+    DataDir(PathBuf),
     /// --strict
     Strict,
     /// -R --parse-raw
@@ -105,9 +104,9 @@ pub enum PandocOption<'a> {
     /// --base-header-level=NUMBER
     BaseHeaderLevel(u32),
     /// --indented-code-classes=STRING
-    IndentedCodeClasses(&'a str),
+    IndentedCodeClasses(String),
     /// -F PROGRAM --filter=PROGRAM
-    Filter(&'a Path),
+    Filter(PathBuf),
     /// --normalize
     Normalize,
     /// -p --preserve-tabs
@@ -117,19 +116,19 @@ pub enum PandocOption<'a> {
     /// --track-changes=accept|reject|all
     TrackChanges(TrackChanges),
     /// --extract-media=PATH
-    ExtractMedia(&'a Path),
+    ExtractMedia(PathBuf),
     /// -s --standalone
     Standalone,
     /// --template=FILENAME
-    Template(&'a Path),
+    Template(PathBuf),
     /// -M KEY[:VALUE] --metadata=KEY[:VALUE]
-    Meta(&'a str, Option<&'a str>),
+    Meta(String, Option<String>),
     /// -V KEY[:VALUE] --variable=KEY[:VALUE]
-    Var(&'a str, Option<&'a str>),
+    Var(String, Option<String>),
     /// -D FORMAT --print-default-template=FORMAT
-    PrintDefaultTemplate(&'a str),
+    PrintDefaultTemplate(String),
     /// --print-default-data-file=FILE
-    PrintDefaultDataFile(&'a Path),
+    PrintDefaultDataFile(PathBuf),
     /// --no-wrap
     NoWrap,
     /// --columns=NUMBER
@@ -141,13 +140,13 @@ pub enum PandocOption<'a> {
     /// --no-highlight
     NoHighlight,
     /// --highlight-style=STYLE
-    HighlightStyle(&'a str),
+    HighlightStyle(String),
     /// -H FILENAME --include-in-header=FILENAME
-    IncludeInHeader(&'a Path),
+    IncludeInHeader(PathBuf),
     /// -B FILENAME --include-before-body=FILENAME
-    IncludeBeforeBody(&'a Path),
+    IncludeBeforeBody(PathBuf),
     /// -A FILENAME --include-after-body=FILENAME
-    IncludeAfterBody(&'a Path),
+    IncludeAfterBody(PathBuf),
     /// --self-contained
     SelfContained,
     /// --offline
@@ -167,7 +166,7 @@ pub enum PandocOption<'a> {
     /// -N --number-sections
     NumberSections,
     /// --number-offset=NUMBERS
-    NumberOffset(&'a [u32]),
+    NumberOffset(Vec<u32>),
     /// --no-tex-ligatures
     NoTexLigatures,
     /// --listings
@@ -179,61 +178,61 @@ pub enum PandocOption<'a> {
     /// --section-divs
     SectionDivs,
     /// --default-image-extension=extension
-    DefaultImageExtension(&'a str),
+    DefaultImageExtension(String),
     /// --email-obfuscation=none|javascript|references
     EmailObfuscation(EmailObfuscation),
     /// --id-prefix=STRING
-    IdPrefix(&'a str),
+    IdPrefix(String),
     /// -T STRING --title-prefix=STRING
-    TitlePrefix(&'a str),
+    TitlePrefix(String),
     /// -c URL --css=URL
-    Css(&'a URL),
+    Css(URL),
     /// --reference-odt=FILENAME
-    ReferenceOdt(&'a Path),
+    ReferenceOdt(PathBuf),
     /// --reference-docx=FILENAME
-    ReferenceDocx(&'a Path),
+    ReferenceDocx(PathBuf),
     /// --epub-stylesheet=FILENAME
-    EpubStylesheet(&'a Path),
+    EpubStylesheet(PathBuf),
     /// --epub-cover-image=FILENAME
-    EpubCoverImage(&'a Path),
+    EpubCoverImage(PathBuf),
     /// --epub-metadata=FILENAME
-    EpubMetadata(&'a Path),
+    EpubMetadata(PathBuf),
     /// --epub-embed-font=FILE
-    EpubEmbedFont(&'a Path),
+    EpubEmbedFont(PathBuf),
     /// --epub-chapter-level=NUMBER
     EpubChapterLevel(u32),
     /// --latex-engine=PROGRAM
-    LatexEngine(&'a Path),
+    LatexEngine(PathBuf),
     /// --latex-engine-opt=STRING
-    LatexEngineOpt(&'a str),
+    LatexEngineOpt(String),
     /// --bibliography=FILE
-    Bibliography(&'a Path),
+    Bibliography(PathBuf),
     /// --csl=FILE
-    Csl(&'a Path),
+    Csl(PathBuf),
     /// --citation-abbreviations=FILE
-    CitationAbbreviations(&'a Path),
+    CitationAbbreviations(PathBuf),
     /// --natbib
     Natbib,
     /// --biblatex
     Biblatex,
     /// -m[URL] --latexmathml[=URL], --asciimathml[=URL]
-    LatexMathML(Option<&'a URL>),
+    LatexMathML(Option<URL>),
     /// --asciimathml[=URL]
-    AsciiMathML(Option<&'a URL>),
+    AsciiMathML(Option<URL>),
     /// --mathml[=URL]
-    MathML(Option<&'a URL>),
+    MathML(Option<URL>),
     /// --mimetex[=URL]
-    MimeTex(Option<&'a URL>),
+    MimeTex(Option<URL>),
     /// --webtex[=URL]
-    WebTex(Option<&'a URL>),
+    WebTex(Option<URL>),
     /// --jsmath[=URL]
-    JsMath(Option<&'a URL>),
+    JsMath(Option<URL>),
     /// --mathjax[=URL]
-    MathJax(Option<&'a URL>),
+    MathJax(Option<URL>),
     /// --katex[=URL]
-    Katex(Option<&'a URL>),
+    Katex(Option<URL>),
     /// --katex-stylesheet=URL
-    KatexStylesheet(&'a URL),
+    KatexStylesheet(URL),
     /// -gladtex
     GladTex,
     /// --trace
@@ -246,12 +245,11 @@ pub enum PandocOption<'a> {
     Verbose,
 }
 
-impl<'a> PandocOption<'a> {
-    fn apply<'c>(&self, pandoc: &'c mut Command) -> &'c mut Command {
+impl PandocOption {
+    fn apply<'a>(&self, pandoc: &'a mut Command) -> &'a mut Command {
         use PandocOption::*;
         match *self {
-
-            NumberOffset(nums)       => {
+            NumberOffset(ref nums) => {
                 let nums = nums.iter()
                     .fold(String::new(),
                           |b, n| {
@@ -264,37 +262,37 @@ impl<'a> PandocOption<'a> {
                 pandoc.args(&[&format!("--number-offset={}", nums)])
             }
 
-            To(ref f)                => pandoc.args(&["-t", &f.render()]),
-            DataDir(dir)             => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
+            To(ref f)                => pandoc.args(&["-t", &f.to_string()]),
+            DataDir(ref dir)         => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
             Strict                   => pandoc.args(&["--strict"]),
             ParseRaw                 => pandoc.args(&["--parse-raw"]),
             Smart                    => pandoc.args(&["--smart"]),
             OldDashes                => pandoc.args(&["--old-dashes"]),
             BaseHeaderLevel(n)       => pandoc.args(&[&format!("--base-header-level={}", n)]),
-            IndentedCodeClasses(s)   => pandoc.args(&[&format!("--indented-code-classes={}", s)]),
-            Filter(program)          => pandoc.args(&[&format!("--filter={}", program.display())]),
+            IndentedCodeClasses(ref s) => pandoc.args(&[&format!("--indented-code-classes={}", s)]),
+            Filter(ref program)      => pandoc.args(&[&format!("--filter={}", program.display())]),
             Normalize                => pandoc.args(&["--normalize"]),
             PreserveTabs             => pandoc.args(&["--preserve-tabs"]),
             TabStop(n)               => pandoc.args(&[&format!("--tab-stop={}", n)]),
             TrackChanges(ref v)      => pandoc.args(&[&format!("--track-changes={}", v)]),
-            ExtractMedia(p)          => pandoc.args(&[&format!("--extract-media={}", p.display())]),
+            ExtractMedia(ref p)      => pandoc.args(&[&format!("--extract-media={}", p.display())]),
             Standalone               => pandoc.args(&["--standalone"]),
-            Template(p)              => pandoc.args(&[&format!("--template={}", p.display())]),
-            Meta(k, Some(v))         => pandoc.args(&["-M", &format!("{}:{}", k, v)]),
-            Meta(k, None)            => pandoc.args(&["-M", k]),
-            Var(k, Some(v))          => pandoc.args(&["-V", &format!("{}:{}", k, v)]),
-            Var(k, None)             => pandoc.args(&["-V", k]),
-            PrintDefaultTemplate(f)  => pandoc.args(&[&format!("--print-default-template={}", f)]),
-            PrintDefaultDataFile(f)  => pandoc.args(&[&format!("--print-default-data-file={}", f.display())]),
+            Template(ref p)          => pandoc.args(&[&format!("--template={}", p.display())]),
+            Meta(ref k, Some(ref v)) => pandoc.args(&["-M", &format!("{}:{}", k, v)]),
+            Meta(ref k, None)        => pandoc.args(&["-M", &k]),
+            Var(ref k, Some(ref v))  => pandoc.args(&["-V", &format!("{}:{}", k, v)]),
+            Var(ref k, None)         => pandoc.args(&["-V", &k]),
+            PrintDefaultTemplate(ref f) => pandoc.args(&[&format!("--print-default-template={}", f)]),
+            PrintDefaultDataFile(ref f) => pandoc.args(&[&format!("--print-default-data-file={}", f.display())]),
             NoWrap                   => pandoc.args(&["--no-wrap"]),
             Columns(n)               => pandoc.args(&[&format!("--columns={}", n)]),
             TableOfContents          => pandoc.args(&["--table-of-contents"]),
             TableOfContentsDepth(d)  => pandoc.args(&[&format!("--toc-depth={}", d)]),
             NoHighlight              => pandoc.args(&["--no-highlight"]),
-            HighlightStyle(s)        => pandoc.args(&[&format!("--highlight-style={}", s)]),
-            IncludeInHeader(p)       => pandoc.args(&[&format!("--include-in-header={}", p.display())]),
-            IncludeBeforeBody(p)     => pandoc.args(&[&format!("--include-before-body={}", p.display())]),
-            IncludeAfterBody(p)      => pandoc.args(&[&format!("--include-after-body={}", p.display())]),
+            HighlightStyle(ref s)    => pandoc.args(&[&format!("--highlight-style={}", s)]),
+            IncludeInHeader(ref p)   => pandoc.args(&[&format!("--include-in-header={}", p.display())]),
+            IncludeBeforeBody(ref p) => pandoc.args(&[&format!("--include-before-body={}", p.display())]),
+            IncludeAfterBody(ref p)  => pandoc.args(&[&format!("--include-after-body={}", p.display())]),
             SelfContained            => pandoc.args(&["--self-contained"]),
             Offline                  => pandoc.args(&["--offline"]),
             Html5                    => pandoc.args(&["--html5"]),
@@ -309,33 +307,33 @@ impl<'a> PandocOption<'a> {
             Incremental              => pandoc.args(&["--incremental"]),
             SlideLevel(n)            => pandoc.args(&[format!("--slide-level={}", n)]),
             SectionDivs              => pandoc.args(&["--section-divs"]),
-            DefaultImageExtension(s) => pandoc.args(&[format!("--default-image-extension={}", s)]),
+            DefaultImageExtension(ref s) => pandoc.args(&[format!("--default-image-extension={}", s)]),
             EmailObfuscation(o)      => pandoc.args(&[format!("--email-obfuscation={}", o)]),
-            IdPrefix(s)              => pandoc.args(&[format!("--id-prefix={}", s)]),
-            TitlePrefix(s)           => pandoc.args(&[format!("--title-prefix={}", s)]),
-            Css(url)                 => pandoc.args(&[format!("--css={}", url)]),
-            ReferenceOdt(file)       => pandoc.args(&[format!("--reference-odt={}", file.display())]),
-            ReferenceDocx(file)      => pandoc.args(&[&format!("--reference-docx={}", file.display())]),
-            EpubStylesheet(file)     => pandoc.args(&[&format!("--epub-stylesheet={}", file.display())]),
-            EpubCoverImage(file)     => pandoc.args(&[&format!("--epub-cover-image={}", file.display())]),
-            EpubMetadata(file)       => pandoc.args(&[&format!("--epub-metadata={}", file.display())]),
-            EpubEmbedFont(file)      => pandoc.args(&[&format!("--epub-embed-font={}", file.display())]),
+            IdPrefix(ref s)          => pandoc.args(&[format!("--id-prefix={}", s)]),
+            TitlePrefix(ref s)       => pandoc.args(&[format!("--title-prefix={}", s)]),
+            Css(ref url)             => pandoc.args(&[format!("--css={}", url)]),
+            ReferenceOdt(ref file)   => pandoc.args(&[format!("--reference-odt={}", file.display())]),
+            ReferenceDocx(ref file)  => pandoc.args(&[&format!("--reference-docx={}", file.display())]),
+            EpubStylesheet(ref file) => pandoc.args(&[&format!("--epub-stylesheet={}", file.display())]),
+            EpubCoverImage(ref file) => pandoc.args(&[&format!("--epub-cover-image={}", file.display())]),
+            EpubMetadata(ref file)   => pandoc.args(&[&format!("--epub-metadata={}", file.display())]),
+            EpubEmbedFont(ref file)  => pandoc.args(&[&format!("--epub-embed-font={}", file.display())]),
             EpubChapterLevel(num)    => pandoc.args(&[&format!("--epub-chapter-level={}", num)]),
-            LatexEngine(program)     => pandoc.args(&[&format!("--latex-engine={}", program.display())]),
-            LatexEngineOpt(s)        => pandoc.args(&[&format!("--latex-engine-opt={}", s)]),
-            Bibliography(file)       => pandoc.args(&[&format!("--bibliography={}", file.display())]),
-            Csl(file)                => pandoc.args(&[&format!("--csl={}", file.display())]),
-            CitationAbbreviations(f) => pandoc.args(&[&format!("--citation-abbreviations={}", f.display())]),
+            LatexEngine(ref program) => pandoc.args(&[&format!("--latex-engine={}", program.display())]),
+            LatexEngineOpt(ref s)    => pandoc.args(&[&format!("--latex-engine-opt={}", s)]),
+            Bibliography(ref file)   => pandoc.args(&[&format!("--bibliography={}", file.display())]),
+            Csl(ref file)            => pandoc.args(&[&format!("--csl={}", file.display())]),
+            CitationAbbreviations(ref f) => pandoc.args(&[&format!("--citation-abbreviations={}", f.display())]),
             Natbib                   => pandoc.args(&["--natbib"]),
             Biblatex                 => pandoc.args(&["--biblatex"]),
-            LatexMathML(Some(url))   => pandoc.args(&[&format!("--latexmathml={}", url)]),
-            AsciiMathML(Some(url))   => pandoc.args(&[&format!("--asciimathml={}", url)]),
-            MathML(Some(url))        => pandoc.args(&[&format!("--mathml={}", url)]),
-            MimeTex(Some(url))       => pandoc.args(&[&format!("--mimetex={}", url)]),
-            WebTex(Some(url))        => pandoc.args(&[&format!("--webtex={}", url)]),
-            JsMath(Some(url))        => pandoc.args(&[&format!("--jsmath={}", url)]),
-            MathJax(Some(url))       => pandoc.args(&[&format!("--mathjax={}", url)]),
-            Katex(Some(url))         => pandoc.args(&[&format!("--katex={}", url)]),
+            LatexMathML(Some(ref url)) => pandoc.args(&[&format!("--latexmathml={}", url)]),
+            AsciiMathML(Some(ref url)) => pandoc.args(&[&format!("--asciimathml={}", url)]),
+            MathML(Some(ref url))    => pandoc.args(&[&format!("--mathml={}", url)]),
+            MimeTex(Some(ref url))   => pandoc.args(&[&format!("--mimetex={}", url)]),
+            WebTex(Some(ref url))    => pandoc.args(&[&format!("--webtex={}", url)]),
+            JsMath(Some(ref url))    => pandoc.args(&[&format!("--jsmath={}", url)]),
+            MathJax(Some(ref url))   => pandoc.args(&[&format!("--mathjax={}", url)]),
+            Katex(Some(ref url))     => pandoc.args(&[&format!("--katex={}", url)]),
             LatexMathML(None)        => pandoc.args(&["--latexmathml"]),
             AsciiMathML(None)        => pandoc.args(&["--asciimathml"]),
             MathML(None)             => pandoc.args(&["--mathml"]),
@@ -344,7 +342,7 @@ impl<'a> PandocOption<'a> {
             JsMath(None)             => pandoc.args(&["--jsmath["]),
             MathJax(None)            => pandoc.args(&["--mathjax["]),
             Katex(None)              => pandoc.args(&["--katex["]),
-            KatexStylesheet(url)     => pandoc.args(&[&format!("--katex-stylesheet={}", url)]),
+            KatexStylesheet(ref url) => pandoc.args(&[&format!("--katex-stylesheet={}", url)]),
             GladTex                  => pandoc.args(&["--gladtex"]),
             Trace                    => pandoc.args(&["--trace"]),
             DumpArgs                 => pandoc.args(&["--dump-args"]),
@@ -697,7 +695,7 @@ impl std::fmt::Display for MarkdownExtension {
 
 #[derive(Clone, Debug)]
 enum InputKind {
-    Files(Vec<String>),
+    Files(Vec<PathBuf>),
     /// passed to the pandoc through stdin
     Pipe(String),
 }
@@ -710,53 +708,40 @@ enum OutputKind {
 
 /// the argument builder
 #[derive(Default, Clone)]
-pub struct Pandoc<'a> {
+pub struct Pandoc {
     input: Option<InputKind>,
     input_format: Option<InputFormat>,
     output: Option<OutputKind>,
-    output_format: Option<OutputFormat>,
-    latex_path_hint: Vec<String>,
-    pandoc_path_hint: Vec<String>,
-    document_class: Option<DocumentClass>,
-    bibliography: Option<String>,
-    csl: Option<String>,
-    toc: bool,
-    chapters: bool,
-    number_sections: bool,
-    template: Option<String>,
-    variables: Vec<(String, String)>,
-    slide_level: Option<usize>,
+    latex_path_hint: Vec<PathBuf>,
+    pandoc_path_hint: Vec<PathBuf>,
     filters: Vec<fn(String) -> String>,
     args: Vec<(String, String)>,
-    options: Vec<PandocOption<'a>>,
+    options: Vec<PandocOption>,
 }
-
-use std::convert::Into;
-use std::borrow::Cow;
 
 /// does nothing useful, simply gives you a builder object
 /// convenience function so you can call pandoc::new()
-pub fn new<'a>() -> Pandoc<'a> { Default::default() }
+pub fn new() -> Pandoc { Default::default() }
 
-impl<'b> Pandoc<'b> {
+impl Pandoc {
     /// does nothing useful, simply gives you a builder object
-    pub fn new() -> Pandoc<'b> { Default::default() }
+    pub fn new() -> Pandoc { Default::default() }
     /// this path is searched first for latex, then PATH, then some hardcoded hints
-    pub fn add_latex_path_hint<'a, T: Into<Cow<'a, str>>>(&mut self, path: T) {
-        self.latex_path_hint.push(path.into().into_owned());
+    pub fn add_latex_path_hint<T: AsRef<Path> + ?Sized>(&mut self, path: &T) {
+        self.latex_path_hint.push(path.as_ref().to_owned());
     }
     /// this path is searched first for pandoc, then PATH, then some hardcoded hints
-    pub fn add_pandoc_path_hint<'a, T: Into<Cow<'a, str>>>(&mut self, path: T) {
-        self.pandoc_path_hint.push(path.into().into_owned());
+    pub fn add_pandoc_path_hint<T: AsRef<Path> + ?Sized>(&mut self, path: &T) {
+        self.pandoc_path_hint.push(path.as_ref().to_owned());
     }
 
     /// sets or overwrites the document-class
     pub fn set_doc_class(&mut self, class: DocumentClass) {
-        self.document_class = Some(class);
+        self.options.push(PandocOption::Var("documentclass".to_string(), Some(class.to_string())))
     }
     /// sets or overwrites the output format
     pub fn set_output_format(&mut self, format: OutputFormat) {
-        self.output_format = Some(format);
+        self.options.push(PandocOption::To(OutputFormatExt::Fmt(format)));
     }
     /// sets or overwrites the input format
     pub fn set_input_format(&mut self, format: InputFormat) {
@@ -765,8 +750,8 @@ impl<'b> Pandoc<'b> {
 
     /// adds more input files, the order is relevant
     /// the order of adding the files is the order in which they are processed
-    pub fn add_input<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        let filename = filename.into().into_owned();
+    pub fn add_input<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) {
+        let filename = filename.as_ref().to_owned();
         match self.input {
             Some(InputKind::Files(ref mut files)) => {
                 files.push(filename);
@@ -778,36 +763,43 @@ impl<'b> Pandoc<'b> {
         }
     }
     /// sets or overwrites the output filename
-    pub fn set_output<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.output = Some(OutputKind::File(filename.into().into_owned()));
+    pub fn set_output<T: AsRef<str> + ?Sized>(&mut self, filename: &T) {
+        self.output = Some(OutputKind::File(filename.as_ref().to_owned()));
     }
 
     /// filename of the bibliography database
-    pub fn set_bibliography<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.bibliography = Some(filename.into().into_owned());
+    pub fn set_bibliography<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) {
+        self.options.push(PandocOption::Bibliography(filename.as_ref().to_owned()));
     }
+
     /// filename of a citation style file
-    pub fn set_csl<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.csl = Some(filename.into().into_owned());
+    pub fn set_csl<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) {
+        self.options.push(PandocOption::Csl(filename.as_ref().to_owned()))
     }
+
     /// enable table of contents
-    pub fn set_toc(&mut self) { self.toc = true; }
+    pub fn set_toc(&mut self) { self.options.push(PandocOption::TableOfContents) }
+
     /// enable chapters
-    pub fn set_chapters(&mut self) { self.chapters = true; }
+    pub fn set_chapters(&mut self) { self.options.push(PandocOption::Chapters) }
+
     /// prefix section names with indices x.y.z
-    pub fn set_number_sections(&mut self) { self.number_sections = true; }
+    pub fn set_number_sections(&mut self) { self.options.push(PandocOption::NumberSections) }
+
     /// set a custom latex template
-    pub fn set_latex_template<'a, T: Into<Cow<'a, str>>>(&mut self, filename: T) {
-        self.template = Some(filename.into().into_owned());
+    pub fn set_latex_template<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) {
+        self.options.push(PandocOption::Template(filename.as_ref().to_owned()));
     }
+
     /// sets the header level that causes a new slide to be generated
-    pub fn set_slide_level(&mut self, level: usize) {
-        self.slide_level = Some(level);
+    pub fn set_slide_level(&mut self, level: u32) {
+        self.options.push(PandocOption::SlideLevel(level))
     }
+
     /// set a custom variable
     /// try not to use this, there are convenience functions for most things
-    pub fn set_variable<'a, T: Into<Cow<'a, str>>, U: Into<Cow<'a, str>>>(&mut self, key: T, value: U) {
-        self.variables.push((key.into().into_owned(), value.into().into_owned()));
+    pub fn set_variable<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(&mut self, key: &T, value: &U) {
+        self.options.push(PandocOption::Var(key.as_ref().to_owned(), Some(value.as_ref().to_owned())));
     }
 
     /// closures that take a json string and return a json string
@@ -815,48 +807,21 @@ impl<'b> Pandoc<'b> {
         self.filters.push(filter);
     }
 
-    pub fn add_option(&mut self, option: PandocOption<'b>) {
+    pub fn add_option(&mut self, option: PandocOption) {
         self.options.push(option);
     }
 
     fn run(self) -> Result<Vec<u8>, PandocError> {
         let mut cmd = Command::new("pandoc");
-        if let Some(format) = self.output_format {
-            cmd.arg("-t").arg(format.to_string());
-        }
         if let Some(format) = self.input_format {
             cmd.arg("-f").arg(format.to_string());
-        }
-        if let Some(filename) = self.bibliography {
-            cmd.arg(format!("--bibliography={}", filename));
-        }
-        if let Some(filename) = self.csl {
-            cmd.arg(format!("--csl={}", filename));
-        }
-        if self.toc {
-            cmd.arg("--toc");
-        }
-        if self.number_sections {
-            cmd.arg("--number-sections");
-        }
-        if let Some(filename) = self.template {
-            cmd.arg(format!("--template={}", filename));
-        }
-        for (key, val) in self.variables {
-            cmd.arg("--variable").arg(format!("{}={}", key, val));
         }
         for (key, val) in self.args {
             cmd.arg(format!("--{}={}", key, val));
         }
-        if let Some(doc_class) = self.document_class {
-            cmd.arg("--variable").arg(format!("documentclass={}", doc_class.to_string()));
-        }
-        if let Some(level) = self.slide_level {
-            cmd.arg(format!("--slide-level={}", level));
-        }
         let path: String = self.latex_path_hint.iter()
             .chain(self.pandoc_path_hint.iter())
-            .map(std::borrow::Borrow::borrow)
+            .map(|p| p.to_str().expect("non-utf8 path"))
             .chain(PANDOC_PATH.into_iter().cloned())
             .chain(LATEX_PATH.into_iter().cloned())
             .chain([env::var("PATH").unwrap()].iter().map(std::borrow::Borrow::borrow))
@@ -901,18 +866,24 @@ impl<'b> Pandoc<'b> {
         }
     }
 
-    fn arg<'a, T: Into<Cow<'a, str>>, U: Into<Cow<'a, str>>>(&mut self, key: T, value: U) {
-        self.args.push((key.into().into_owned(), value.into().into_owned()));
+    fn arg<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(&mut self, key: &T, value: &U) {
+        self.args.push((key.as_ref().to_owned(), value.as_ref().to_owned()));
     }
 
     /// generate a latex template from the given settings
     /// this function can panic in a lot of places
-    pub fn generate_latex_template<'a, T: Into<Cow<'a, str>>>(mut self, filename: T) {
-        let format = self.output_format.as_ref().map(ToString::to_string).unwrap();
-        self.arg("print-default-template", format);
+    pub fn generate_latex_template<T: AsRef<str> + ?Sized>(mut self, filename: &T) {
+        let mut format = None;
+        for opt in &self.options {
+            if let PandocOption::To(ref f) = *opt {
+                format = Some(f.clone());
+                break;
+            }
+        }
+        let format = format.unwrap();
+        self.arg("print-default-template", &format.to_string());
         let output = self.run().unwrap();
-        let filename: &str = &filename.into();
-        let mut file = std::fs::File::create(filename).unwrap();
+        let mut file = std::fs::File::create(filename.as_ref()).unwrap();
         file.write_all(&output).unwrap();
     }
 
@@ -925,7 +896,7 @@ impl<'b> Pandoc<'b> {
         }
         let mut pandoc = self.clone();
         self.output = Some(OutputKind::Pipe);
-        self.output_format = Some(OutputFormat::Json);
+        self.set_output_format(OutputFormat::Json);
         let o = try!(self.run());
         let o = String::from_utf8(o).unwrap();
         // apply all filters

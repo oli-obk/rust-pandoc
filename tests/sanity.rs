@@ -17,5 +17,7 @@ fn creation() {
     pandoc.set_slide_level(3);
     pandoc.set_toc();
     pandoc.add_option(Strict);
-    pandoc.add_option(IndentedCodeClasses("cake"));
+    pandoc.add_option(IndentedCodeClasses("cake".to_string()));
+    let path = PathBuf::new();
+    pandoc.add_option(Filter(path));
 }
