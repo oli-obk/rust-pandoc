@@ -894,16 +894,17 @@ impl Pandoc {
             let _ = try!(self.run());
             return Ok(());
         }
-        let mut pandoc = self.clone();
-        self.output = Some(OutputKind::Pipe);
-        self.set_output_format(OutputFormat::Json);
-        let o = try!(self.run());
+        let mut pre = new();
+        pre.output = Some(OutputKind::Pipe);
+        pre.set_output_format(OutputFormat::Json);
+        pre.input = std::mem::replace(&mut self.input, None);
+        pre.input_format = std::mem::replace(&mut self.input_format, Some(InputFormat::Json));
+        let o = try!(pre.run());
         let o = String::from_utf8(o).unwrap();
         // apply all filters
         let filtered = filters.into_iter().fold(o, |acc, item| item(acc));
-        pandoc.input = Some(InputKind::Pipe(filtered));
-        pandoc.input_format = Some(InputFormat::Json);
-        let _ = try!(pandoc.run());
+        self.input = Some(InputKind::Pipe(filtered));
+        let _ = try!(self.run());
         Ok(())
     }
 }
