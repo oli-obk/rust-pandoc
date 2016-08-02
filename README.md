@@ -4,18 +4,21 @@
 
 1. [Install pandoc](http://pandoc.org/installing.html)
 2. add the pandoc crate to your Cargo.toml
-```toml
-[dependencies]
-open = "*"
-pandoc = { path = "D:\\rust_pandoc\\"}
-```
+
+    ```toml
+    [dependencies]
+    open = "*"
+    pandoc = { path = "D:\\rust_pandoc\\"}
+   ```
+
 3. create a pandoc builder and execute it
-```rust
-let mut pandoc = pandoc::new();
-pandoc.add_input("hello_world.md");
-pandoc.set_output("hello_world.pdf");
-pandoc.execute().unwrap();
-```
+
+    ```rust
+    let mut pandoc = pandoc::new();
+    pandoc.add_input("hello_world.md");
+    pandoc.set_output("hello_world.pdf");
+    pandoc.execute().unwrap();
+    ```
 
 # PDF-output
 ## Windows specific
