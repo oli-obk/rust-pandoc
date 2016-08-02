@@ -895,6 +895,8 @@ impl Pandoc {
             return Ok(());
         }
         let mut pre = new();
+        pre.pandoc_path_hint = self.pandoc_path_hint.clone();
+        pre.latex_path_hint = self.latex_path_hint.clone();
         pre.output = Some(OutputKind::Pipe);
         pre.set_output_format(OutputFormat::Json);
         pre.input = std::mem::replace(&mut self.input, None);
