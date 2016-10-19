@@ -717,15 +717,22 @@ pub struct Pandoc {
     filters: Vec<fn(String) -> String>,
     args: Vec<(String, String)>,
     options: Vec<PandocOption>,
+    print_pandoc_cmdline: bool,
 }
 
-/// does nothing useful, simply gives you a builder object
-/// convenience function so you can call pandoc::new()
-pub fn new() -> Pandoc { Default::default() }
+/// Convenience function to call Pandoc::new()
+pub fn new() -> Pandoc {
+Pandoc::new()
+}
 
 impl Pandoc {
-    /// does nothing useful, simply gives you a builder object
-    pub fn new() -> Pandoc { Default::default() }
+    /// Get a new Pandoc object
+    /// This function returns a builder object to configure the Pandoc
+    /// execution.
+    pub fn new() -> Pandoc {
+        Pandoc { print_pandoc_cmdline: false, ..Default::default() }
+    }
+
     /// this path is searched first for latex, then PATH, then some hardcoded hints
     pub fn add_latex_path_hint<T: AsRef<Path> + ?Sized>(&mut self, path: &T) {
         self.latex_path_hint.push(path.as_ref().to_owned());
@@ -739,6 +746,15 @@ impl Pandoc {
     pub fn set_doc_class(&mut self, class: DocumentClass) {
         self.options.push(PandocOption::Var("documentclass".to_string(), Some(class.to_string())))
     }
+
+    /// Set whether Pandoc should print the used command-line
+    ///
+    /// If set to true, the command-line to execute pandoc (as a subprocess)
+    /// will be displayed on stdout.
+    pub fn set_show_cmdline(&mut self, flag: bool) {
+        self.print_pandoc_cmdline = flag;
+    }
+
     /// sets or overwrites the output format
     pub fn set_output_format(&mut self, format: OutputFormat) {
         self.options.push(PandocOption::To(OutputFormatExt::Fmt(format)));
@@ -853,7 +869,9 @@ impl Pandoc {
         for opt in self.options {
             opt.apply(&mut cmd);
         }
-        println!("{:?}", cmd);
+        if self.print_pandoc_cmdline {
+            println!("{:?}", cmd);
+        }
         let mut child = try!(cmd.spawn());
         if let Some(ref mut stdin) = child.stdin {
             try!(stdin.write_all(input.as_bytes()));
