@@ -1,7 +1,11 @@
 [package]
 name = "pandoc"
-version = "0.4.3"
-authors = ["Oliver Schneider <rust-pandoc61914191@oli-obk.de>", "Felix S. Klock II <pnkfelix@pnkfx.org>"]
+version = "0.5.0"
+authors = [
+  "Oliver Schneider <rust-pandoc61914191@oli-obk.de>", 
+  "Felix S. Klock II <pnkfelix@pnkfx.org>", 
+  "Chris Krycho <chris@chriskrycho.com>"
+]
 readme = "README.md"
 keywords = ["latex", "markdown"]
 repository = "https://github.com/oli-obk/rust-pandoc"
