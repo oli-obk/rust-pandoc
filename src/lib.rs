@@ -88,6 +88,13 @@ impl std::fmt::Display for EmailObfuscation {
 pub type URL = String;
 
 #[derive(Clone, Debug)]
+pub enum Tld {
+    Chapter,
+    Section,
+    Part,
+}
+
+#[derive(Clone, Debug)]
 pub enum PandocOption {
     /// -t FORMAT  --to=FORMAT
     To(OutputFormatExt),
@@ -161,8 +168,8 @@ pub enum PandocOption {
     ReferenceLinks,
     /// --atx-headers
     AtxHeaders,
-    /// --chapters
-    Chapters,
+    /// --top-level-division=
+    TopLevelDivision(Tld),
     /// -N --number-sections
     NumberSections,
     /// --number-offset=NUMBERS
@@ -248,6 +255,7 @@ pub enum PandocOption {
 impl PandocOption {
     fn apply<'a>(&self, pandoc: &'a mut Command) -> &'a mut Command {
         use PandocOption::*;
+        use Tld::*;
         match *self {
             NumberOffset(ref nums) => {
                 let nums = nums.iter()
@@ -300,7 +308,9 @@ impl PandocOption {
             Ascii                    => pandoc.args(&["--ascii"]),
             ReferenceLinks           => pandoc.args(&["--reference-links"]),
             AtxHeaders               => pandoc.args(&["--atx-headers"]),
-            Chapters                 => pandoc.args(&["--chapters"]),
+            TopLevelDivision(Chapter) => pandoc.args(&["--top-level-division=chapter"]),
+            TopLevelDivision(Section) => pandoc.args(&["--top-level-division=section"]),
+            TopLevelDivision(Part) => pandoc.args(&["--top-level-division=part"]),
             NumberSections           => pandoc.args(&["--number-sections"]),
             NoTexLigatures           => pandoc.args(&["--no-tex-ligatures"]),
             Listings                 => pandoc.args(&["--listings"]),
@@ -797,7 +807,7 @@ impl Pandoc {
     pub fn set_toc(&mut self) { self.options.push(PandocOption::TableOfContents) }
 
     /// enable chapters
-    pub fn set_chapters(&mut self) { self.options.push(PandocOption::Chapters) }
+    pub fn set_chapters(&mut self) { self.options.push(PandocOption::TopLevelDivision(Tld::Chapter)) }
 
     /// prefix section names with indices x.y.z
     pub fn set_number_sections(&mut self) { self.options.push(PandocOption::NumberSections) }
@@ -826,7 +836,7 @@ impl Pandoc {
     pub fn add_option(&mut self, option: PandocOption) {
         self.options.push(option);
     }
-    
+
     pub fn add_options(&mut self, options: &[PandocOption]) {
         self.options.extend_from_slice(options);
     }
