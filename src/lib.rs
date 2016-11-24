@@ -826,6 +826,10 @@ impl Pandoc {
     pub fn add_option(&mut self, option: PandocOption) {
         self.options.push(option);
     }
+    
+    pub fn add_options(&mut self, options: &[PandocOption]) {
+        self.options.extend_from_slice(options);
+    }
 
     fn run(self) -> Result<Vec<u8>, PandocError> {
         let mut cmd = Command::new("pandoc");
