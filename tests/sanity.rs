@@ -5,10 +5,11 @@ use std::path::PathBuf;
 #[test]
 fn creation() {
     use pandoc::PandocOption::*;
+    use pandoc::OutputKind;
     let mut pandoc = pandoc::new();
 
     pandoc.add_input("cake");
-    pandoc.set_output("lie");
+    pandoc.set_output(OutputKind::File(String::from("lie")));
     pandoc.set_chapters();
     pandoc.set_number_sections();
     pandoc.set_latex_template("template.tex");

@@ -5,6 +5,7 @@ extern crate itertools;
 
 use itertools::Itertools;
 
+use std::str;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
@@ -710,8 +711,9 @@ enum InputKind {
     Pipe(String),
 }
 
+/// Specify whether to generate a file or pipe the output to stdout.
 #[derive(Clone, Debug)]
-enum OutputKind {
+pub enum OutputKind {
     File(String),
     Pipe,
 }
@@ -799,11 +801,11 @@ impl Pandoc {
         self
     }
     /// sets or overwrites the output filename
-    pub fn set_output<'p, T: AsRef<str> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
-        self.output = Some(OutputKind::File(filename.as_ref().to_owned()));
+    pub fn set_output<'p>(&'p mut self, output: OutputKind) -> &'p mut Pandoc {
+        self.output = Some(output);
         self
     }
-
+    
     /// filename of the bibliography database
     pub fn set_bibliography<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         self.options.push(PandocOption::Bibliography(filename.as_ref().to_owned()));
@@ -953,14 +955,14 @@ impl Pandoc {
         let mut file = std::fs::File::create(filename.as_ref()).unwrap();
         file.write_all(&output).unwrap();
     }
-
-    /// actually execute pandoc
-    pub fn execute(mut self) -> Result<(), PandocError> {
+    
+    fn preprocess(&mut self) -> Result<(), PandocError> {
         let filters = std::mem::replace(&mut self.filters, Vec::new());
+        
         if filters.is_empty() {
-            let _ = try!(self.run());
             return Ok(());
         }
+
         let mut pre = new();
         pre.pandoc_path_hint = self.pandoc_path_hint.clone();
         pre.latex_path_hint = self.latex_path_hint.clone();
@@ -973,13 +975,44 @@ impl Pandoc {
         // apply all filters
         let filtered = filters.into_iter().fold(o, |acc, item| item(acc));
         self.input = Some(InputKind::Pipe(filtered));
-        let _ = try!(self.run());
         Ok(())
     }
+    
+    /// Execute the Pandoc configured command.
+    /// 
+    /// A successful Pandoc run can return either the path to a file written by 
+    /// the operation, or the result of the operation from `stdio`.
+    /// 
+    /// The `PandocOutput` variant returned depends on the `OutputKind`
+    /// configured: 
+    pub fn execute(mut self) -> Result<PandocOutput, PandocError> {
+        let _ = try!(self.preprocess());
+        let output_kind = self.output.clone();
+        let output = try!(self.run());
+        
+        match output_kind {
+            Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(PathBuf::from(name))),
+            Some(OutputKind::Pipe) => match String::from_utf8(output) {
+                Ok(string) => Ok(PandocOutput::ToBuffer(string)),
+                Err(err) => Err(PandocError::from(err.utf8_error())),
+            },
+            None => Err(PandocError::NoOutputSpecified),
+        }
+    }
+}
+
+/// The output from Pandoc: the file written to, or a buffer with its output.
+pub enum PandocOutput {
+    /// The results of the pandoc operation are stored in `Path`
+    ToFile(PathBuf),
+    /// The results of the pandoc operation are returned as a `String`
+    ToBuffer(String),
 }
 
 /// Possible errors that can occur before or during pandoc execution
 pub enum PandocError {
+    /// conversion from UTF-8 failed; includes valid-up-to byte count.
+    BadUtf8Conversion(usize),
     /// some kind of IO-Error
     IoErr(std::io::Error),
     /// pandoc execution failed, look at the stderr output
@@ -1001,6 +1034,12 @@ impl std::convert::From<std::io::Error> for PandocError {
     }
 }
 
+impl std::convert::From<std::str::Utf8Error> for PandocError {
+    fn from(error: std::str::Utf8Error) -> Self {
+        PandocError::BadUtf8Conversion(error.valid_up_to())
+    }
+}
+
 impl std::fmt::Debug for PandocError {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match *self {
@@ -1012,7 +1051,10 @@ impl std::fmt::Debug for PandocError {
             },
             PandocError::NoOutputSpecified => write!(fmt, "No output file was specified"),
             PandocError::NoInputSpecified => write!(fmt, "No input files were specified"),
-            PandocError::PandocNotFound => write!(fmt, "Pandoc not found, did you forget to install pandoc?"),
+            PandocError::PandocNotFound => 
+                write!(fmt, "Pandoc not found, did you forget to install pandoc?"),
+            PandocError::BadUtf8Conversion(byte) => 
+                write!(fmt, "UTF-8 conversion of pandoc output failed after byte {}.", byte),
         }
     }
 }
