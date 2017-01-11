@@ -705,7 +705,7 @@ impl std::fmt::Display for MarkdownExtension {
 }
 
 #[derive(Clone, Debug)]
-enum InputKind {
+pub enum InputKind {
     Files(Vec<PathBuf>),
     /// passed to the pandoc through stdin
     Pipe(String),
@@ -786,20 +786,41 @@ impl Pandoc {
 
     /// adds more input files, the order is relevant
     /// the order of adding the files is the order in which they are processed
+    /// This does not work, if input has been already set to standard input.
     pub fn add_input<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
-        
         let filename = filename.as_ref().to_owned();
         let _ = match self.input {
             Some(InputKind::Files(ref mut files)) => {
                 files.push(filename);
             },
+            Some(InputKind::Pipe(_)) => panic!("Input has been set to stdin already, \
+                                            adding input file names is impossible"),
             None => {
                 self.input = Some(InputKind::Files(vec![filename]));
             },
-            _ => unreachable!(),
         };
         self
     }
+
+    /// Set input for Pandoc.
+    ///
+    /// The input is given with `pandoc::InputKind` and overrides any inputs already
+    /// supplied.
+    /// 
+    /// # Example
+    ///
+    /// ```
+    /// fn main() {
+    ///     // pass in a string using standard input:
+    ///     let markdown = "**very** _important".into();
+    ///     let mut p = pandoc::new(); // assign to variable to increase life time
+    ///     p.set_input(pandoc::InputKind::Pipe(markdown));
+    /// }
+    pub fn set_input(&mut self, input: InputKind) -> &mut Pandoc {
+        self.input = Some(input);
+        self
+    }
+
     /// sets or overwrites the output filename
     pub fn set_output<'p>(&'p mut self, output: OutputKind) -> &'p mut Pandoc {
         self.output = Some(output);
