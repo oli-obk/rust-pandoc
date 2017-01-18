@@ -707,7 +707,7 @@ impl std::fmt::Display for MarkdownExtension {
 #[derive(Clone, Debug)]
 pub enum InputKind {
     Files(Vec<PathBuf>),
-    /// passed to the pandoc through stdin
+    /// passed to the pandoc executable through stdin
     Pipe(String),
 }
 
