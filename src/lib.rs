@@ -745,20 +745,27 @@ impl Pandoc {
         Pandoc { print_pandoc_cmdline: false, ..Default::default() }
     }
 
-    /// this path is searched first for latex, then PATH, then some hardcoded hints
+    /// Add a path hint to search for the LaTeX executable.
+    ///
+    /// The supplied path is searched first for the latex executable, then the environment variable
+    /// `PATH`, then some hard-coded location hints.
     pub fn add_latex_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
             
         self.latex_path_hint.push(path.as_ref().to_owned());
         self
     }
-    /// this path is searched first for pandoc, then PATH, then some hardcoded hints
+
+    /// Add a path hint to search for the Pandoc executable.
+    ///
+    /// The supplied path is searched first for the Pandoc executable, then the environment variable `PATH`, then
+    /// some hard-coded location hints.
     pub fn add_pandoc_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
             
         self.pandoc_path_hint.push(path.as_ref().to_owned());
         self
     }
 
-    /// sets or overwrites the document-class
+    /// Sets or overwrite the document-class.
     pub fn set_doc_class<'p>(&'p mut self, class: DocumentClass) -> &'p mut Pandoc {
         self.options.push(PandocOption::Var("documentclass".to_string(), Some(class.to_string())));
         self
@@ -773,7 +780,7 @@ impl Pandoc {
         self
     }
 
-    /// sets or overwrites the output format
+    /// Set or overwrite the output format.
     pub fn set_output_format<'p>(&'p mut self, format: OutputFormat) -> &'p mut Pandoc {
         self.options.push(PandocOption::To(OutputFormatExt::Fmt(format)));
         self
@@ -784,9 +791,12 @@ impl Pandoc {
         self
     }
 
-    /// adds more input files, the order is relevant
-    /// the order of adding the files is the order in which they are processed
-    /// This does not work, if input has been already set to standard input.
+    /// Add additional input files
+    ///
+    /// The order of adding the files is the order in which they are processed, hence the order is
+    /// important.
+    /// This function does not work, if input has been already set to standard input using
+    /// [`set_input`](#method.set_input_format).
     pub fn add_input<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         let filename = filename.as_ref().to_owned();
         let _ = match self.input {
@@ -821,56 +831,64 @@ impl Pandoc {
         self
     }
 
-    /// sets or overwrites the output filename
+    /// Sets or overwrite the output filename.
     pub fn set_output<'p>(&'p mut self, output: OutputKind) -> &'p mut Pandoc {
         self.output = Some(output);
         self
     }
     
-    /// filename of the bibliography database
+    /// Set the file name of the bibliography database.
     pub fn set_bibliography<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         self.options.push(PandocOption::Bibliography(filename.as_ref().to_owned()));
         self
     }
 
-    /// filename of a citation style file
+    /// Set the filename of the citation style file.
     pub fn set_csl<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         self.options.push(PandocOption::Csl(filename.as_ref().to_owned()));
         self
     }
 
-    /// enable table of contents
+    /// Enable the generation of a table of contents
+    ///
+    /// By default, documents are transformed as they are. If this option is set, a table of
+    /// contents is added right in front of the actual document.
     pub fn set_toc<'p>(&'p mut self) -> &'p mut Pandoc {
         self.options.push(PandocOption::TableOfContents);
         self
     }
 
-    /// enable chapters
+    /// Treat top-level headers as chapters in LaTeX, ConTeXt, and DocBook output.
     pub fn set_chapters<'p>(&'p mut self) -> &'p mut Pandoc {
         self.options.push(PandocOption::TopLevelDivision(Tld::Chapter));
         self
     }
 
-    /// prefix section names with indices x.y.z
+    /// Set custom prefix for sections.
+    ///
+    /// If this function is called, all sections will be numbered. Normally, sections in LaTeX,
+    /// ConTeXt, HTML, or EPUB output are unnumbered.
     pub fn set_number_sections<'p>(&'p mut self) -> &'p mut Pandoc {
         self.options.push(PandocOption::NumberSections);
         self
     }
 
-    /// set a custom latex template
+    /// Set a custom latex template.
     pub fn set_latex_template<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         self.options.push(PandocOption::Template(filename.as_ref().to_owned()));
         self
     }
 
-    /// sets the header level that causes a new slide to be generated
+    /// Sets the header level that causes a new slide to be generated.
     pub fn set_slide_level<'p>(&'p mut self, level: u32) -> &'p mut Pandoc {
         self.options.push(PandocOption::SlideLevel(level));
         self
     }
 
-    /// set a custom variable
-    /// try not to use this, there are convenience functions for most things
+    /// Set a custom variable.
+    ///
+    /// This method sets a custom Pandoc variable. It is adviced not to use this function, because
+    /// there are convenience functions for most of the available variables.
     pub fn set_variable
         <'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>
         (&'p mut self, key: &T, value: &U) -> &'p mut Pandoc {
@@ -879,12 +897,17 @@ impl Pandoc {
         self
     }
 
-    /// closures that take a json string and return a json string
+    /// Add a Pandoc filter.
+    ///
+    /// Pandoc parses any of the supported input formats to an abstract syntax tree (AST). If a
+    /// filter is specified, it will receive a JSON representation of this AST and can transform it
+    /// to its liking and add/modify/remove elements. The output is then passed back to Pandoc.
     pub fn add_filter<'p>(&'p mut self, filter: fn(String) -> String) -> &'p mut Pandoc {
         self.filters.push(filter);
         self
     }
 
+    /// Add a [PandocOption](PandocOption.t.html).
     pub fn add_option<'p>(&'p mut self, option: PandocOption) -> &'p mut Pandoc {
         self.options.push(option);
         self
