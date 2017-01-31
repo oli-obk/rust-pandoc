@@ -934,6 +934,10 @@ impl Pandoc {
                 cmd.stdout(std::process::Stdio::piped());
             },
         }
+
+        // always capture stderr
+        cmd.stderr(std::process::Stdio::piped());
+
         for opt in self.options {
             opt.apply(&mut cmd);
         }
@@ -1036,7 +1040,7 @@ pub enum PandocError {
     BadUtf8Conversion(usize),
     /// some kind of IO-Error
     IoErr(std::io::Error),
-    /// pandoc execution failed, look at the stderr output
+    /// pandoc execution failed, provide output from stderr
     Err(std::process::Output),
     /// forgot to specify an output file
     NoOutputSpecified,
