@@ -1,6 +1,5 @@
 //! API that wraps the pandoc command line tool
 
-#[macro_use]
 extern crate itertools;
 
 use itertools::Itertools;
