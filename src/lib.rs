@@ -764,7 +764,7 @@ impl Pandoc {
         self
     }
 
-    /// Sets or overwrite the document-class.
+    /// Set or overwrite the document-class.
     pub fn set_doc_class<'p>(&'p mut self, class: DocumentClass) -> &'p mut Pandoc {
         self.options.push(PandocOption::Var("documentclass".to_string(), Some(class.to_string())));
         self
@@ -784,7 +784,7 @@ impl Pandoc {
         self.options.push(PandocOption::To(OutputFormatExt::Fmt(format)));
         self
     }
-    /// sets or overwrites the input format
+    /// Set or overwrite the input format
     pub fn set_input_format<'p>(&'p mut self, format: InputFormat) -> &'p mut Pandoc {
         self.input_format = Some(format);
         self
@@ -830,7 +830,7 @@ impl Pandoc {
         self
     }
 
-    /// Sets or overwrite the output filename.
+    /// Set or overwrite the output filename.
     pub fn set_output<'p>(&'p mut self, output: OutputKind) -> &'p mut Pandoc {
         self.output = Some(output);
         self
@@ -878,7 +878,7 @@ impl Pandoc {
         self
     }
 
-    /// Sets the header level that causes a new slide to be generated.
+    /// Set the header level that causes a new slide to be generated.
     pub fn set_slide_level<'p>(&'p mut self, level: u32) -> &'p mut Pandoc {
         self.options.push(PandocOption::SlideLevel(level));
         self
