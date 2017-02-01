@@ -1,6 +1,6 @@
 [package]
 name = "pandoc"
-version = "0.5.1"
+version = "0.5.2"
 authors = [
   "Oliver Schneider <rust-pandoc61914191@oli-obk.de>",
   "Felix S. Klock II <pnkfelix@pnkfx.org>",
