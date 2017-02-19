@@ -35,30 +35,6 @@ const LATEX_PATH: &'static [&'static str] = &[
 use std::process::Command;
 use std::env;
 
-#[derive(Clone, Debug)]
-/// allow to choose an output format with or without extensions
-pub enum OutputFormatExt {
-    /// a predefined pandoc format
-    Fmt(OutputFormat),
-    /// allows formats like markdown+pipetables+gridtables
-    FmtExt(OutputFormat, Vec<MarkdownExtension>),
-}
-
-impl std::fmt::Display for OutputFormatExt {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match *self {
-            OutputFormatExt::Fmt(ref s) => write!(fmt, "{}", s),
-            OutputFormatExt::FmtExt(ref s, ref ext) => {
-                try!(write!(fmt, "{}", s));
-                for e in ext {
-                    try!(write!(fmt, "+{}", e));
-                }
-                Ok(())
-            }
-        }
-    }
-}
-
 #[derive(Copy, Clone, Debug)]
 pub enum TrackChanges { Accept, Reject, All }
 
@@ -97,7 +73,9 @@ pub enum Tld {
 #[derive(Clone, Debug)]
 pub enum PandocOption {
     /// -t FORMAT  --to=FORMAT
-    To(OutputFormatExt),
+    To(OutputFormat, Vec<MarkdownExtension>),
+    /// -f FORMAT  --from=FORMAT
+    From(InputFormat, Vec<MarkdownExtension>),
     /// --data-dir=DIRECTORY
     DataDir(PathBuf),
     /// --strict
@@ -270,7 +248,22 @@ impl PandocOption {
                 pandoc.args(&[&format!("--number-offset={}", nums)])
             }
 
-            To(ref f)                => pandoc.args(&["-t", &f.to_string()]),
+            To(ref f, ref ext)       => pandoc.args(&["-t", &{
+                let mut s = f.to_string();
+                for ext in ext {
+                    use std::fmt::Write;
+                    write!(&mut s, "+{}", ext).unwrap();
+                }
+                s
+            }]),
+            From(ref f, ref ext)       => pandoc.args(&["-f", &{
+                let mut s = f.to_string();
+                for ext in ext {
+                    use std::fmt::Write;
+                    write!(&mut s, "+{}", ext).unwrap();
+                }
+                s
+            }]),
             DataDir(ref dir)         => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
             Strict                   => pandoc.args(&["--strict"]),
             ParseRaw                 => pandoc.args(&["--parse-raw"]),
@@ -749,7 +742,6 @@ impl Pandoc {
     /// The supplied path is searched first for the latex executable, then the environment variable
     /// `PATH`, then some hard-coded location hints.
     pub fn add_latex_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
-            
         self.latex_path_hint.push(path.as_ref().to_owned());
         self
     }
@@ -759,7 +751,6 @@ impl Pandoc {
     /// The supplied path is searched first for the Pandoc executable, then the environment variable `PATH`, then
     /// some hard-coded location hints.
     pub fn add_pandoc_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
-            
         self.pandoc_path_hint.push(path.as_ref().to_owned());
         self
     }
@@ -781,7 +772,7 @@ impl Pandoc {
 
     /// Set or overwrite the output format.
     pub fn set_output_format<'p>(&'p mut self, format: OutputFormat) -> &'p mut Pandoc {
-        self.options.push(PandocOption::To(OutputFormatExt::Fmt(format)));
+        self.options.push(PandocOption::To(format, Vec::new()));
         self
     }
     /// Set or overwrite the input format
@@ -815,7 +806,7 @@ impl Pandoc {
     ///
     /// The input is given with `pandoc::InputKind` and overrides any inputs already
     /// supplied.
-    /// 
+    ///
     /// # Example
     ///
     /// ```
@@ -835,7 +826,7 @@ impl Pandoc {
         self.output = Some(output);
         self
     }
-    
+
     /// Set the file name of the bibliography database.
     pub fn set_bibliography<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
         self.options.push(PandocOption::Bibliography(filename.as_ref().to_owned()));
@@ -891,7 +882,6 @@ impl Pandoc {
     pub fn set_variable
         <'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>
         (&'p mut self, key: &T, value: &U) -> &'p mut Pandoc {
-            
         self.options.push(PandocOption::Var(key.as_ref().to_owned(), Some(value.as_ref().to_owned())));
         self
     }
@@ -911,7 +901,7 @@ impl Pandoc {
         self.options.push(option);
         self
     }
-    
+
     pub fn add_options<'p>(&'p mut self, options: &[PandocOption]) -> &'p mut Pandoc {
         self.options.extend_from_slice(options);
         self
@@ -980,19 +970,23 @@ impl Pandoc {
 
     fn arg<'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>
         (&'p mut self, key: &T, value: &U) -> &'p mut Pandoc {
-            
         self.args.push((key.as_ref().to_owned(), value.as_ref().to_owned()));
         self
     }
 
     /// generate a latex template from the given settings
-    /// 
+    ///
     /// Warning: this function can panic in a lot of places.
     pub fn generate_latex_template<T: AsRef<str> + ?Sized>(mut self, filename: &T) {
         let mut format = None;
         for opt in &self.options {
-            if let PandocOption::To(ref f) = *opt {
-                format = Some(f.clone());
+            if let PandocOption::To(ref f, ref ext) = *opt {
+                let mut s = f.to_string();
+                for ext in ext {
+                    use std::fmt::Write;
+                    write!(&mut s, "+{}", ext).unwrap();
+                }
+                format = Some(s);
                 break;
             }
         }
@@ -1002,10 +996,10 @@ impl Pandoc {
         let mut file = std::fs::File::create(filename.as_ref()).unwrap();
         file.write_all(&output).unwrap();
     }
-    
+
     fn preprocess(&mut self) -> Result<(), PandocError> {
         let filters = std::mem::replace(&mut self.filters, Vec::new());
-        
+
         if filters.is_empty() {
             return Ok(());
         }
@@ -1024,19 +1018,19 @@ impl Pandoc {
         self.input = Some(InputKind::Pipe(filtered));
         Ok(())
     }
-    
+
     /// Execute the Pandoc configured command.
-    /// 
-    /// A successful Pandoc run can return either the path to a file written by 
+    ///
+    /// A successful Pandoc run can return either the path to a file written by
     /// the operation, or the result of the operation from `stdio`.
-    /// 
+    ///
     /// The `PandocOutput` variant returned depends on the `OutputKind`
-    /// configured: 
+    /// configured:
     pub fn execute(mut self) -> Result<PandocOutput, PandocError> {
         let _ = try!(self.preprocess());
         let output_kind = self.output.clone();
         let output = try!(self.run());
-        
+
         match output_kind {
             Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(PathBuf::from(name))),
             Some(OutputKind::Pipe) => match String::from_utf8(output) {
@@ -1098,9 +1092,9 @@ impl std::fmt::Debug for PandocError {
             },
             PandocError::NoOutputSpecified => write!(fmt, "No output file was specified"),
             PandocError::NoInputSpecified => write!(fmt, "No input files were specified"),
-            PandocError::PandocNotFound => 
+            PandocError::PandocNotFound =>
                 write!(fmt, "Pandoc not found, did you forget to install pandoc?"),
-            PandocError::BadUtf8Conversion(byte) => 
+            PandocError::BadUtf8Conversion(byte) =>
                 write!(fmt, "UTF-8 conversion of pandoc output failed after byte {}.", byte),
         }
     }
