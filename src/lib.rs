@@ -72,10 +72,6 @@ pub enum Tld {
 
 #[derive(Clone, Debug)]
 pub enum PandocOption {
-    /// -t FORMAT  --to=FORMAT
-    To(OutputFormat, Vec<MarkdownExtension>),
-    /// -f FORMAT  --from=FORMAT
-    From(InputFormat, Vec<MarkdownExtension>),
     /// --data-dir=DIRECTORY
     DataDir(PathBuf),
     /// --strict
@@ -247,23 +243,6 @@ impl PandocOption {
                           });
                 pandoc.args(&[&format!("--number-offset={}", nums)])
             }
-
-            To(ref f, ref ext)       => pandoc.args(&["-t", &{
-                let mut s = f.to_string();
-                for ext in ext {
-                    use std::fmt::Write;
-                    write!(&mut s, "+{}", ext).unwrap();
-                }
-                s
-            }]),
-            From(ref f, ref ext)       => pandoc.args(&["-f", &{
-                let mut s = f.to_string();
-                for ext in ext {
-                    use std::fmt::Write;
-                    write!(&mut s, "+{}", ext).unwrap();
-                }
-                s
-            }]),
             DataDir(ref dir)         => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
             Strict                   => pandoc.args(&["--strict"]),
             ParseRaw                 => pandoc.args(&["--parse-raw"]),
@@ -714,8 +693,9 @@ pub enum OutputKind {
 #[derive(Default, Clone)]
 pub struct Pandoc {
     input: Option<InputKind>,
-    input_format: Option<InputFormat>,
+    input_format: Option<(InputFormat, Vec<MarkdownExtension>)>,
     output: Option<OutputKind>,
+    output_format: Option<(OutputFormat, Vec<MarkdownExtension>)>,
     latex_path_hint: Vec<PathBuf>,
     pandoc_path_hint: Vec<PathBuf>,
     filters: Vec<fn(String) -> String>,
@@ -742,6 +722,7 @@ impl Pandoc {
     /// The supplied path is searched first for the latex executable, then the environment variable
     /// `PATH`, then some hard-coded location hints.
     pub fn add_latex_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
+
         self.latex_path_hint.push(path.as_ref().to_owned());
         self
     }
@@ -751,6 +732,7 @@ impl Pandoc {
     /// The supplied path is searched first for the Pandoc executable, then the environment variable `PATH`, then
     /// some hard-coded location hints.
     pub fn add_pandoc_path_hint<'p, T: AsRef<Path> + ?Sized>(&'p mut self, path: &T) -> &'p mut Pandoc {
+
         self.pandoc_path_hint.push(path.as_ref().to_owned());
         self
     }
@@ -771,13 +753,13 @@ impl Pandoc {
     }
 
     /// Set or overwrite the output format.
-    pub fn set_output_format<'p>(&'p mut self, format: OutputFormat) -> &'p mut Pandoc {
-        self.options.push(PandocOption::To(format, Vec::new()));
+    pub fn set_output_format<'p>(&'p mut self, format: OutputFormat, extensions: Vec<MarkdownExtension>) -> &'p mut Pandoc {
+        self.output_format = Some((format, extensions));
         self
     }
     /// Set or overwrite the input format
-    pub fn set_input_format<'p>(&'p mut self, format: InputFormat) -> &'p mut Pandoc {
-        self.input_format = Some(format);
+    pub fn set_input_format<'p>(&'p mut self, format: InputFormat, extensions: Vec<MarkdownExtension>) -> &'p mut Pandoc {
+        self.input_format = Some((format, extensions));
         self
     }
 
@@ -882,6 +864,7 @@ impl Pandoc {
     pub fn set_variable
         <'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>
         (&'p mut self, key: &T, value: &U) -> &'p mut Pandoc {
+
         self.options.push(PandocOption::Var(key.as_ref().to_owned(), Some(value.as_ref().to_owned())));
         self
     }
@@ -909,8 +892,13 @@ impl Pandoc {
 
     fn run(self) -> Result<Vec<u8>, PandocError> {
         let mut cmd = Command::new("pandoc");
-        if let Some(format) = self.input_format {
-            cmd.arg("-f").arg(format.to_string());
+        if let Some((ref format, ref extensions)) = self.input_format {
+            use std::fmt::Write;
+            let mut arg = format.to_string();
+            for extension in extensions {
+                write!(arg, "+{}", extension).unwrap();
+            }
+            cmd.arg("-f").arg(arg);
         }
         for (key, val) in self.args {
             cmd.arg(format!("--{}={}", key, val));
@@ -950,6 +938,15 @@ impl Pandoc {
         // always capture stderr
         cmd.stderr(std::process::Stdio::piped());
 
+        if let Some((ref format, ref extensions)) = self.output_format {
+            use std::fmt::Write;
+            let mut arg = format.to_string();
+            for extension in extensions {
+                write!(arg, "+{}", extension).unwrap();
+            }
+            cmd.arg("-t").arg(arg);
+        }
+
         for opt in self.options {
             opt.apply(&mut cmd);
         }
@@ -970,6 +967,7 @@ impl Pandoc {
 
     fn arg<'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>
         (&'p mut self, key: &T, value: &U) -> &'p mut Pandoc {
+
         self.args.push((key.as_ref().to_owned(), value.as_ref().to_owned()));
         self
     }
@@ -979,16 +977,13 @@ impl Pandoc {
     /// Warning: this function can panic in a lot of places.
     pub fn generate_latex_template<T: AsRef<str> + ?Sized>(mut self, filename: &T) {
         let mut format = None;
-        for opt in &self.options {
-            if let PandocOption::To(ref f, ref ext) = *opt {
-                let mut s = f.to_string();
-                for ext in ext {
-                    use std::fmt::Write;
-                    write!(&mut s, "+{}", ext).unwrap();
-                }
-                format = Some(s);
-                break;
+        if let Some((ref f, ref ext)) = self.output_format {
+            let mut s = f.to_string();
+            for ext in ext {
+                use std::fmt::Write;
+                write!(&mut s, "+{}", ext).unwrap();
             }
+            format = Some(s);
         }
         let format = format.unwrap();
         self.arg("print-default-template", &format.to_string());
@@ -1008,9 +1003,16 @@ impl Pandoc {
         pre.pandoc_path_hint = self.pandoc_path_hint.clone();
         pre.latex_path_hint = self.latex_path_hint.clone();
         pre.output = Some(OutputKind::Pipe);
-        pre.set_output_format(OutputFormat::Json);
+        pre.set_output_format(OutputFormat::Json, Vec::new());
         pre.input = std::mem::replace(&mut self.input, None);
-        pre.input_format = std::mem::replace(&mut self.input_format, Some(InputFormat::Json));
+        pre.print_pandoc_cmdline = self.print_pandoc_cmdline;
+        match std::mem::replace(&mut self.input_format, None) {
+            None => self.input_format = Some((InputFormat::Json, Vec::new())),
+            Some((fmt, ext)) => {
+                pre.input_format = Some((fmt, Vec::new()));
+                self.input_format = Some((InputFormat::Json, ext));
+            },
+        }
         let o = try!(pre.run());
         let o = String::from_utf8(o).unwrap();
         // apply all filters
