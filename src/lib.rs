@@ -1101,3 +1101,30 @@ impl std::fmt::Debug for PandocError {
         }
     }
 }
+
+impl std::fmt::Display for PandocError {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        std::fmt::Debug::fmt(self, fmt)
+    }
+}
+
+impl std::error::Error for PandocError {
+    fn description(&self) -> &str {
+        use PandocError::*;
+        match *self {
+            IoErr(ref e) => e.description(),
+            Err(_) => "Pandoc execution failed",
+            NoOutputSpecified => "No output file was specified",
+            NoInputSpecified => "No input files were specified",
+            PandocNotFound => "Pandoc not found",
+            BadUtf8Conversion(_) => "UTF-8 conversion of pandoc output failed",
+        }
+    }
+
+    fn cause(&self) -> Option<&std::error::Error> {
+        match *self {
+            PandocError::IoErr(ref e) => Some(e),
+            _ => None,
+        }
+    }
+}
