@@ -14,4 +14,4 @@ license = "MIT/Apache-2.0"
 description = "a library API that wraps calls to the pandoc executable"
 
 [dependencies]
-itertools = "0.4"
+itertools = "0.6"
