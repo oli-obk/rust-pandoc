@@ -1,6 +1,6 @@
 [package]
 name = "pandoc"
-version = "0.5.2"
+version = "0.6.1"
 authors = [
   "Oliver Schneider <rust-pandoc61914191@oli-obk.de>",
   "Felix S. Klock II <pnkfelix@pnkfx.org>",
@@ -14,4 +14,4 @@ license = "MIT/Apache-2.0"
 description = "a library API that wraps calls to the pandoc executable"
 
 [dependencies]
-itertools = "0.4"
+itertools = "0.6"

@@ -13,7 +13,7 @@ fn creation() {
     pandoc.set_chapters();
     pandoc.set_number_sections();
     pandoc.set_latex_template("template.tex");
-    pandoc.set_output_format(pandoc::OutputFormat::Beamer);
+    pandoc.set_output_format(pandoc::OutputFormat::Beamer, Vec::new());
     pandoc.add_latex_path_hint("D:\\texlive\\2015\\bin\\win32");
     pandoc.set_slide_level(3);
     pandoc.set_toc();
