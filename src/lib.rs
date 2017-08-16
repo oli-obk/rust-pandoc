@@ -32,6 +32,14 @@ const LATEX_PATH: &'static [&'static str] = &[
     r"/usr/local/texlive/2015/bin/i386-linux",
 ];
 
+/// character to split path variable on windows
+#[cfg(windows)]
+const PATH_DELIMIT: &'static str = ";";
+
+/// character to split path variable on 'other platforms'
+#[cfg(not(windows))]
+const PATH_DELIMIT: &'static str = ":";
+
 use std::process::Command;
 use std::env;
 
@@ -909,7 +917,7 @@ impl Pandoc {
             .chain(PANDOC_PATH.into_iter().cloned())
             .chain(LATEX_PATH.into_iter().cloned())
             .chain([env::var("PATH").unwrap()].iter().map(std::borrow::Borrow::borrow))
-            .intersperse(";")
+            .intersperse(PATH_DELIMIT)
             .collect();
         cmd.env("PATH", path);
         let output = try!(self.output.ok_or(PandocError::NoOutputSpecified));
