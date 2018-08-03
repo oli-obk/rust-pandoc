@@ -190,10 +190,10 @@ pub enum PandocOption {
     EpubEmbedFont(PathBuf),
     /// --epub-chapter-level=NUMBER
     EpubChapterLevel(u32),
-    /// --latex-engine=PROGRAM
-    LatexEngine(PathBuf),
-    /// --latex-engine-opt=STRING
-    LatexEngineOpt(String),
+    /// --pdf-engine=PROGRAM
+    PdfEngine(PathBuf),
+    /// --pdf-engine-opt=STRING
+    PdfEngineOpt(String),
     /// --bibliography=FILE
     Bibliography(PathBuf),
     /// --csl=FILE
@@ -309,8 +309,8 @@ impl PandocOption {
             EpubMetadata(ref file)   => pandoc.args(&[&format!("--epub-metadata={}", file.display())]),
             EpubEmbedFont(ref file)  => pandoc.args(&[&format!("--epub-embed-font={}", file.display())]),
             EpubChapterLevel(num)    => pandoc.args(&[&format!("--epub-chapter-level={}", num)]),
-            LatexEngine(ref program) => pandoc.args(&[&format!("--latex-engine={}", program.display())]),
-            LatexEngineOpt(ref s)    => pandoc.args(&[&format!("--latex-engine-opt={}", s)]),
+            PdfEngine(ref program)   => pandoc.args(&[&format!("--pdf-engine={}", program.display())]),
+            PdfEngineOpt(ref s)      => pandoc.args(&[&format!("--pdf-engine-opt={}", s)]),
             Bibliography(ref file)   => pandoc.args(&[&format!("--bibliography={}", file.display())]),
             Csl(ref file)            => pandoc.args(&[&format!("--csl={}", file.display())]),
             CitationAbbreviations(ref f) => pandoc.args(&[&format!("--citation-abbreviations={}", f.display())]),

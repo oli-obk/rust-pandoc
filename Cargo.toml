@@ -1,6 +1,6 @@
 [package]
 name = "pandoc"
-version = "0.6.2"
+version = "0.7.0"
 authors = [
   "Oliver Schneider <rust-pandoc61914191@oli-obk.de>",
   "Felix S. Klock II <pnkfelix@pnkfx.org>",
@@ -11,7 +11,7 @@ keywords = ["latex", "markdown"]
 repository = "https://github.com/oli-obk/rust-pandoc"
 documentation = "https://oli-obk.github.io/rust-pandoc/"
 license = "MIT/Apache-2.0"
-description = "a library API that wraps calls to the pandoc executable"
+description = "a library API that wraps calls to the pandoc 2.x executable"
 
 [dependencies]
 itertools = "0.6"
