@@ -16,7 +16,7 @@
     ```rust
     let mut pandoc = pandoc::new();
     pandoc.add_input("hello_world.md");
-    pandoc.set_output("hello_world.pdf");
+    pandoc.set_output(OutputKind::File("hello_world.pdf".to_string()));
     pandoc.execute().unwrap();
     ```
 
