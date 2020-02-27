@@ -245,7 +245,7 @@ impl PandocOption {
         match *self {
             NumberOffset(ref nums) => {
                 let nums = nums.iter().fold(String::new(), |b, n| {
-                    if b.len() == 0 {
+                    if b.is_empty() {
                         format!("{}", n)
                     } else {
                         format!("{}, {}", b, n)
