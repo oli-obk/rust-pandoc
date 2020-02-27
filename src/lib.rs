@@ -1052,7 +1052,7 @@ impl Pandoc {
             format = Some(s);
         }
         let format = format.unwrap();
-        self.arg("print-default-template", &format.to_string());
+        self.arg("print-default-template", &format);
         let output = self.run().unwrap();
         let mut file = std::fs::File::create(filename.as_ref()).unwrap();
         file.write_all(&output).unwrap();
