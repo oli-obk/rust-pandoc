@@ -1,7 +1,5 @@
 //! API that wraps the pandoc command line tool
 
-extern crate itertools;
-
 use itertools::Itertools;
 
 use std::io::Write;
@@ -240,8 +238,8 @@ pub enum PandocOption {
 
 impl PandocOption {
     fn apply<'a>(&self, pandoc: &'a mut Command) -> &'a mut Command {
-        use PandocOption::*;
-        use Tld::*;
+        use crate::PandocOption::*;
+        use crate::Tld::*;
         match *self {
             NumberOffset(ref nums) => {
                 let nums = nums.iter().fold(String::new(), |b, n| {
@@ -381,7 +379,7 @@ pub enum DocumentClass {
     Book,
 }
 
-pub use DocumentClass::*;
+pub use crate::DocumentClass::*;
 
 impl std::fmt::Display for DocumentClass {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -476,7 +474,7 @@ pub enum OutputFormat {
 
 impl std::fmt::Display for OutputFormat {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use OutputFormat::*;
+        use crate::OutputFormat::*;
         match *self {
             Native => write!(fmt, "native"),
             Json => write!(fmt, "json"),
@@ -567,7 +565,7 @@ pub enum InputFormat {
 
 impl std::fmt::Display for InputFormat {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use InputFormat::*;
+        use crate::InputFormat::*;
         match *self {
             Native => write!(fmt, "native"),
             Json => write!(fmt, "json"),
@@ -652,7 +650,7 @@ pub enum MarkdownExtension {
 
 impl std::fmt::Display for MarkdownExtension {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        use MarkdownExtension::*;
+        use crate::MarkdownExtension::*;
         match *self {
             EscapedLineBreaks => write!(fmt, "escaped_line_breaks"),
             BlankBeforeHeader => write!(fmt, "blank_before_header"),
@@ -1178,7 +1176,7 @@ impl std::fmt::Display for PandocError {
 
 impl std::error::Error for PandocError {
     fn description(&self) -> &str {
-        use PandocError::*;
+        use crate::PandocError::*;
         match *self {
             IoErr(ref e) => e.description(),
             Err(_) => "Pandoc execution failed",
