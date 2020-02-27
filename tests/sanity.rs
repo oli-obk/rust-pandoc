@@ -4,8 +4,8 @@ use std::path::PathBuf;
 
 #[test]
 fn creation() {
-    use pandoc::PandocOption::*;
     use pandoc::OutputKind;
+    use pandoc::PandocOption::*;
     let mut pandoc = pandoc::new();
 
     pandoc.add_input("cake");
