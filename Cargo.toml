@@ -10,7 +10,7 @@ authors = [
 readme = "README.md"
 keywords = ["latex", "markdown"]
 repository = "https://github.com/oli-obk/rust-pandoc"
-documentation = "https://oli-obk.github.io/rust-pandoc/"
+documentation = "https://docs.rs/pandoc"
 license = "MIT/Apache-2.0"
 description = "a library API that wraps calls to the pandoc 2.x executable"
 
