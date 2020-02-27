@@ -965,8 +965,8 @@ impl Pandoc {
             .iter()
             .chain(self.pandoc_path_hint.iter())
             .map(|p| p.to_str().expect("non-utf8 path"))
-            .chain(PANDOC_PATH.into_iter().cloned())
-            .chain(LATEX_PATH.into_iter().cloned())
+            .chain(PANDOC_PATH.iter().cloned())
+            .chain(LATEX_PATH.iter().cloned())
             .chain(
                 [env::var("PATH").unwrap()]
                     .iter()
