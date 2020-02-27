@@ -841,12 +841,10 @@ impl Pandoc {
     /// # Example
     ///
     /// ```
-    /// fn main() {
-    ///     // pass in a string using standard input:
-    ///     let markdown = "**very** _important".into();
-    ///     let mut p = pandoc::new(); // assign to variable to increase life time
-    ///     p.set_input(pandoc::InputKind::Pipe(markdown));
-    /// }
+    /// // pass in a string using standard input:
+    /// let markdown = "**very** _important".into();
+    /// let mut p = pandoc::new(); // assign to variable to increase life time
+    /// p.set_input(pandoc::InputKind::Pipe(markdown));
     pub fn set_input(&mut self, input: InputKind) -> &mut Pandoc {
         self.input = Some(input);
         self
