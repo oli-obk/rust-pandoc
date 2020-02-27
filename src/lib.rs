@@ -759,10 +759,7 @@ impl Pandoc {
     ///
     /// The supplied path is searched first for the latex executable, then the environment variable
     /// `PATH`, then some hard-coded location hints.
-    pub fn add_latex_path_hint<'p, T: AsRef<Path> + ?Sized>(
-        &'p mut self,
-        path: &T,
-    ) -> &'p mut Pandoc {
+    pub fn add_latex_path_hint<T: AsRef<Path> + ?Sized>(&mut self, path: &T) -> &mut Pandoc {
         self.latex_path_hint.push(path.as_ref().to_owned());
         self
     }
@@ -771,16 +768,13 @@ impl Pandoc {
     ///
     /// The supplied path is searched first for the Pandoc executable, then the environment variable `PATH`, then
     /// some hard-coded location hints.
-    pub fn add_pandoc_path_hint<'p, T: AsRef<Path> + ?Sized>(
-        &'p mut self,
-        path: &T,
-    ) -> &'p mut Pandoc {
+    pub fn add_pandoc_path_hint<T: AsRef<Path> + ?Sized>(&mut self, path: &T) -> &mut Pandoc {
         self.pandoc_path_hint.push(path.as_ref().to_owned());
         self
     }
 
     /// Set or overwrite the document-class.
-    pub fn set_doc_class<'p>(&'p mut self, class: DocumentClass) -> &'p mut Pandoc {
+    pub fn set_doc_class(&mut self, class: DocumentClass) -> &mut Pandoc {
         self.options.push(PandocOption::Var(
             "documentclass".to_string(),
             Some(class.to_string()),
@@ -792,26 +786,26 @@ impl Pandoc {
     ///
     /// If set to true, the command-line to execute pandoc (as a subprocess)
     /// will be displayed on stdout.
-    pub fn set_show_cmdline<'p>(&'p mut self, flag: bool) -> &'p mut Pandoc {
+    pub fn set_show_cmdline(&mut self, flag: bool) -> &mut Pandoc {
         self.print_pandoc_cmdline = flag;
         self
     }
 
     /// Set or overwrite the output format.
-    pub fn set_output_format<'p>(
-        &'p mut self,
+    pub fn set_output_format(
+        &mut self,
         format: OutputFormat,
         extensions: Vec<MarkdownExtension>,
-    ) -> &'p mut Pandoc {
+    ) -> &mut Pandoc {
         self.output_format = Some((format, extensions));
         self
     }
     /// Set or overwrite the input format
-    pub fn set_input_format<'p>(
-        &'p mut self,
+    pub fn set_input_format(
+        &mut self,
         format: InputFormat,
         extensions: Vec<MarkdownExtension>,
-    ) -> &'p mut Pandoc {
+    ) -> &mut Pandoc {
         self.input_format = Some((format, extensions));
         self
     }
@@ -822,7 +816,7 @@ impl Pandoc {
     /// important.
     /// This function does not work, if input has been already set to standard input using
     /// [`set_input`](#method.set_input_format).
-    pub fn add_input<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
+    pub fn add_input<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) -> &mut Pandoc {
         let filename = filename.as_ref().to_owned();
         let _ = match self.input {
             Some(InputKind::Files(ref mut files)) => {
@@ -859,23 +853,20 @@ impl Pandoc {
     }
 
     /// Set or overwrite the output filename.
-    pub fn set_output<'p>(&'p mut self, output: OutputKind) -> &'p mut Pandoc {
+    pub fn set_output(&mut self, output: OutputKind) -> &mut Pandoc {
         self.output = Some(output);
         self
     }
 
     /// Set the file name of the bibliography database.
-    pub fn set_bibliography<'p, T: AsRef<Path> + ?Sized>(
-        &'p mut self,
-        filename: &T,
-    ) -> &'p mut Pandoc {
+    pub fn set_bibliography<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) -> &mut Pandoc {
         self.options
             .push(PandocOption::Bibliography(filename.as_ref().to_owned()));
         self
     }
 
     /// Set the filename of the citation style file.
-    pub fn set_csl<'p, T: AsRef<Path> + ?Sized>(&'p mut self, filename: &T) -> &'p mut Pandoc {
+    pub fn set_csl<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) -> &mut Pandoc {
         self.options
             .push(PandocOption::Csl(filename.as_ref().to_owned()));
         self
@@ -885,13 +876,13 @@ impl Pandoc {
     ///
     /// By default, documents are transformed as they are. If this option is set, a table of
     /// contents is added right in front of the actual document.
-    pub fn set_toc<'p>(&'p mut self) -> &'p mut Pandoc {
+    pub fn set_toc(&mut self) -> &mut Pandoc {
         self.options.push(PandocOption::TableOfContents);
         self
     }
 
     /// Treat top-level headers as chapters in LaTeX, ConTeXt, and DocBook output.
-    pub fn set_chapters<'p>(&'p mut self) -> &'p mut Pandoc {
+    pub fn set_chapters(&mut self) -> &mut Pandoc {
         self.options
             .push(PandocOption::TopLevelDivision(Tld::Chapter));
         self
@@ -901,23 +892,20 @@ impl Pandoc {
     ///
     /// If this function is called, all sections will be numbered. Normally, sections in LaTeX,
     /// ConTeXt, HTML, or EPUB output are unnumbered.
-    pub fn set_number_sections<'p>(&'p mut self) -> &'p mut Pandoc {
+    pub fn set_number_sections(&mut self) -> &mut Pandoc {
         self.options.push(PandocOption::NumberSections);
         self
     }
 
     /// Set a custom latex template.
-    pub fn set_latex_template<'p, T: AsRef<Path> + ?Sized>(
-        &'p mut self,
-        filename: &T,
-    ) -> &'p mut Pandoc {
+    pub fn set_latex_template<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) -> &mut Pandoc {
         self.options
             .push(PandocOption::Template(filename.as_ref().to_owned()));
         self
     }
 
     /// Set the header level that causes a new slide to be generated.
-    pub fn set_slide_level<'p>(&'p mut self, level: u32) -> &'p mut Pandoc {
+    pub fn set_slide_level(&mut self, level: u32) -> &mut Pandoc {
         self.options.push(PandocOption::SlideLevel(level));
         self
     }
@@ -926,11 +914,11 @@ impl Pandoc {
     ///
     /// This method sets a custom Pandoc variable. It is adviced not to use this function, because
     /// there are convenience functions for most of the available variables.
-    pub fn set_variable<'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
-        &'p mut self,
+    pub fn set_variable<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
+        &mut self,
         key: &T,
         value: &U,
-    ) -> &'p mut Pandoc {
+    ) -> &mut Pandoc {
         self.options.push(PandocOption::Var(
             key.as_ref().to_owned(),
             Some(value.as_ref().to_owned()),
@@ -943,18 +931,18 @@ impl Pandoc {
     /// Pandoc parses any of the supported input formats to an abstract syntax tree (AST). If a
     /// filter is specified, it will receive a JSON representation of this AST and can transform it
     /// to its liking and add/modify/remove elements. The output is then passed back to Pandoc.
-    pub fn add_filter<'p>(&'p mut self, filter: fn(String) -> String) -> &'p mut Pandoc {
+    pub fn add_filter(&mut self, filter: fn(String) -> String) -> &mut Pandoc {
         self.filters.push(filter);
         self
     }
 
     /// Add a [PandocOption](PandocOption.t.html).
-    pub fn add_option<'p>(&'p mut self, option: PandocOption) -> &'p mut Pandoc {
+    pub fn add_option(&mut self, option: PandocOption) -> &mut Pandoc {
         self.options.push(option);
         self
     }
 
-    pub fn add_options<'p>(&'p mut self, options: &[PandocOption]) -> &'p mut Pandoc {
+    pub fn add_options(&mut self, options: &[PandocOption]) -> &mut Pandoc {
         self.options.extend_from_slice(options);
         self
     }
@@ -1040,11 +1028,11 @@ impl Pandoc {
         }
     }
 
-    fn arg<'p, T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
-        &'p mut self,
+    fn arg<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
+        &mut self,
         key: &T,
         value: &U,
-    ) -> &'p mut Pandoc {
+    ) -> &mut Pandoc {
         self.args
             .push((key.as_ref().to_owned(), value.as_ref().to_owned()));
         self
