@@ -818,7 +818,7 @@ impl Pandoc {
     /// [`set_input`](#method.set_input_format).
     pub fn add_input<T: AsRef<Path> + ?Sized>(&mut self, filename: &T) -> &mut Pandoc {
         let filename = filename.as_ref().to_owned();
-        let _ = match self.input {
+        match self.input {
             Some(InputKind::Files(ref mut files)) => {
                 files.push(filename);
             }
@@ -1095,7 +1095,7 @@ impl Pandoc {
     /// The `PandocOutput` variant returned depends on the `OutputKind`
     /// configured:
     pub fn execute(mut self) -> Result<PandocOutput, PandocError> {
-        let _ = self.preprocess()?;
+        self.preprocess()?;
         let output_kind = self.output.clone();
         let output = self.run()?;
 
