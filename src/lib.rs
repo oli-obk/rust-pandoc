@@ -987,8 +987,8 @@ impl Pandoc {
             .intersperse(PATH_DELIMIT)
             .collect();
         cmd.env("PATH", path);
-        let output = try!(self.output.ok_or(PandocError::NoOutputSpecified));
-        let input = try!(self.input.ok_or(PandocError::NoInputSpecified));
+        let output = self.output.ok_or(PandocError::NoOutputSpecified)?;
+        let input = self.input.ok_or(PandocError::NoInputSpecified)?;
         let input = match input {
             InputKind::Files(files) => {
                 for file in files {
@@ -1028,11 +1028,11 @@ impl Pandoc {
         if self.print_pandoc_cmdline {
             println!("{:?}", cmd);
         }
-        let mut child = try!(cmd.spawn());
+        let mut child = cmd.spawn()?;
         if let Some(ref mut stdin) = child.stdin {
-            try!(stdin.write_all(input.as_bytes()));
+            stdin.write_all(input.as_bytes())?;
         }
-        let o = try!(child.wait_with_output());
+        let o = child.wait_with_output()?;
         if o.status.success() {
             Ok(o.stdout)
         } else {
@@ -1091,7 +1091,7 @@ impl Pandoc {
                 self.input_format = Some((InputFormat::Json, ext));
             }
         }
-        let o = try!(pre.run());
+        let o = pre.run()?;
         let o = String::from_utf8(o).unwrap();
         // apply all filters
         let filtered = filters.into_iter().fold(o, |acc, item| item(acc));
@@ -1107,9 +1107,9 @@ impl Pandoc {
     /// The `PandocOutput` variant returned depends on the `OutputKind`
     /// configured:
     pub fn execute(mut self) -> Result<PandocOutput, PandocError> {
-        let _ = try!(self.preprocess());
+        let _ = self.preprocess()?;
         let output_kind = self.output.clone();
-        let output = try!(self.run());
+        let output = self.run()?;
 
         match output_kind {
             Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(PathBuf::from(name))),
@@ -1166,12 +1166,8 @@ impl std::fmt::Debug for PandocError {
         match *self {
             PandocError::IoErr(ref e) => write!(fmt, "{:?}", e),
             PandocError::Err(ref e) => {
-                try!(write!(fmt, "exit_code: {:?}", e.status.code()));
-                try!(write!(
-                    fmt,
-                    "stdout: {}",
-                    String::from_utf8_lossy(&e.stdout)
-                ));
+                write!(fmt, "exit_code: {:?}", e.status.code())?;
+                write!(fmt, "stdout: {}", String::from_utf8_lossy(&e.stdout))?;
                 write!(fmt, "stderr: {}", String::from_utf8_lossy(&e.stderr))
             }
             PandocError::NoOutputSpecified => write!(fmt, "No output file was specified"),
