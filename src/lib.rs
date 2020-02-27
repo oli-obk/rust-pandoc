@@ -10,32 +10,31 @@ use std::str;
 
 /// path to pandoc executable
 #[cfg(windows)]
-const PANDOC_PATH: &'static [&'static str] = &[
+const PANDOC_PATH: &[&str] = &[
     // this compiles the user's name into the binary, maybe not the greatest idea?
     concat!(env!("LOCALAPPDATA"), r#"\Pandoc\"#),
 ];
 /// path to pandoc executable
 #[cfg(not(windows))]
-const PANDOC_PATH: &'static [&'static str] = &[];
+const PANDOC_PATH: &[&str] = &[];
 
 /// path where miktex executables can be found
 #[cfg(windows)]
-const LATEX_PATH: &'static [&'static str] = &[
+const LATEX_PATH: &[&str] = &[
     r#"C:\Program Files (x86)\MiKTeX 2.9\miktex\bin"#,
     r#"C:\Program Files\MiKTeX 2.9\miktex\bin"#,
 ];
 /// path where miktex executables can be found
 #[cfg(not(windows))]
-const LATEX_PATH: &'static [&'static str] =
-    &[r"/usr/local/bin", r"/usr/local/texlive/2015/bin/i386-linux"];
+const LATEX_PATH: &[&str] = &[r"/usr/local/bin", r"/usr/local/texlive/2015/bin/i386-linux"];
 
 /// character to split path variable on windows
 #[cfg(windows)]
-const PATH_DELIMIT: &'static str = ";";
+const PATH_DELIMIT: &str = ";";
 
 /// character to split path variable on 'other platforms'
 #[cfg(not(windows))]
-const PATH_DELIMIT: &'static str = ":";
+const PATH_DELIMIT: &str = ":";
 
 use std::env;
 use std::process::Command;
