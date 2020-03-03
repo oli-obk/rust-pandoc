@@ -21,4 +21,7 @@ fn creation() {
     pandoc.add_option(IndentedCodeClasses("cake".to_string()));
     let path = PathBuf::new();
     pandoc.add_option(Filter(path));
+    let pat = "from";
+    let rep = "to";
+    pandoc.add_filter(move |s| s.replace(pat, rep));
 }
