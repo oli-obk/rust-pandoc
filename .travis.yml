@@ -7,8 +7,6 @@ before_script:
 script:
 - travis-cargo test
 - travis-cargo --only stable doc
-after_success:
-- travis-cargo --only stable doc-upload
 env:
   global:
     secure: gOGGaFJrtvyzradiVyAsXmJVIqKb9CzQmaNkXGn++wKByauobFvGH0qtt4hlwHYKZ/c6G67tYsRGpqg0yzPI2tZ894ZlpsUzkRGG6/kkVqo29dYfLlnRn2w3y1RsaVcMYj7Nd5aa4AQOyuTKs9UOe54ivth0kbA76SDwzTbVOzkTTQY8oM0favS+X7J8tu6LRa4VRO1xUtzU+v6Mot0kgZ49moG8Ay2d4e+FlIh1DqRjFpe/mhEOnNHtO3UbDYU8+M09Ne8Y/cAlI493QCfLSXd7Sye2G/UeKk3Qbre1mrhBropBg6QF/qefu3knEkL6fmsmYt/QI7RS6SxKTNJCcy4E9Cc+DiVzjQOd+6bjyIGV1J93suSJgbxQIPKZsSGhJw15ZuhBxnnPLcBiVnfxC3FYD/EoblAXPNGWt2By3zXYU8xYCAH2u7AqU08QYgp1hDtJ91PqHw8nJbjZuYps5G/uguGtW/iN3wtCLUpxC1m4d+V9A5j43YIWe9XFvtonszw0PHFHLQy+mM3rzRGT0D6ubIQcjtAf0NsyOe71bpMuSPADvo3YtvBOQVIBeIiG94VG81LB+JPeCtMjuCKFyl2mtw/44cHArIqxqWQ7BrHaO4UVU0NbxFvfSSRket/e845MG6v9SHGWCjGiJQP1cz+jPRv1lXiBwRbQhtMEAS0=
