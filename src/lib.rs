@@ -718,7 +718,7 @@ pub enum InputKind {
 /// Specify whether to generate a file or pipe the output to stdout.
 #[derive(Clone, Debug)]
 pub enum OutputKind {
-    File(String),
+    File(PathBuf),
     Pipe,
 }
 
@@ -1096,7 +1096,7 @@ impl Pandoc {
         let output = self.run()?;
 
         match output_kind {
-            Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(PathBuf::from(name))),
+            Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(name)),
             Some(OutputKind::Pipe) => match String::from_utf8(output) {
                 Ok(string) => Ok(PandocOutput::ToBuffer(string)),
                 Err(err) => Err(PandocError::from(err.utf8_error())),
