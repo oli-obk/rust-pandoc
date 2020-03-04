@@ -4,6 +4,7 @@ use itertools::Itertools;
 
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::str;
 
 /// path to pandoc executable
@@ -731,7 +732,7 @@ pub struct Pandoc {
     output_format: Option<(OutputFormat, Vec<MarkdownExtension>)>,
     latex_path_hint: Vec<PathBuf>,
     pandoc_path_hint: Vec<PathBuf>,
-    filters: Vec<fn(String) -> String>,
+    filters: Vec<Rc<dyn Fn(String) -> String>>,
     args: Vec<(String, String)>,
     options: Vec<PandocOption>,
     print_pandoc_cmdline: bool,
@@ -927,8 +928,15 @@ impl Pandoc {
     /// Pandoc parses any of the supported input formats to an abstract syntax tree (AST). If a
     /// filter is specified, it will receive a JSON representation of this AST and can transform it
     /// to its liking and add/modify/remove elements. The output is then passed back to Pandoc.
-    pub fn add_filter(&mut self, filter: fn(String) -> String) -> &mut Pandoc {
-        self.filters.push(filter);
+    ///
+    /// The provided filter function must live at least as long as the Pandoc instance,
+    /// which will typically be achieved by making it a function, or else a closure which
+    /// does not attempt to hold references to anything which isn't `'static`.
+    pub fn add_filter<F>(&mut self, filter: F) -> &mut Pandoc
+    where
+        F: 'static + Fn(String) -> String,
+    {
+        self.filters.push(Rc::new(filter));
         self
     }
 
