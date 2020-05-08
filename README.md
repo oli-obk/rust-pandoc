@@ -7,8 +7,7 @@
 
     ```toml
     [dependencies]
-    open = "*"
-    pandoc = { path = "D:\\rust_pandoc\\"}
+    pandoc = "0.8"
    ```
 
 3. create a pandoc builder and execute it
