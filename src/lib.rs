@@ -93,7 +93,8 @@ pub enum PandocOption {
     Smart,
     /// --old-dashes
     OldDashes,
-    /// DEPRECATED (replaced by ShiftHeadingLevelBy): --base-header-level=NUMBER
+    /// --base-header-level=NUMBER
+    #[deprecated(note = "replaced by ShiftHeadingLevelBy")]
     BaseHeaderLevel(u32),
     /// --shift-heading-level-by=NUMBER,
     ShiftHeadingLevelBy(i32),
