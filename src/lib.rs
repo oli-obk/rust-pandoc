@@ -260,6 +260,7 @@ impl PandocOption {
             ParseRaw => pandoc.args(&["--parse-raw"]),
             Smart => pandoc.args(&["--smart"]),
             OldDashes => pandoc.args(&["--old-dashes"]),
+            #[allow(deprecated)]
             BaseHeaderLevel(n) => pandoc.args(&[&format!("--base-header-level={}", n)]),
             ShiftHeadingLevelBy(n) => pandoc.args(&[&format!("--shift-heading-level-by={}", n)]),
             IndentedCodeClasses(ref s) => pandoc.args(&[&format!("--indented-code-classes={}", s)]),
