@@ -94,7 +94,10 @@ pub enum PandocOption {
     /// --old-dashes
     OldDashes,
     /// --base-header-level=NUMBER
+    #[deprecated(note = "replaced by ShiftHeadingLevelBy")]
     BaseHeaderLevel(u32),
+    /// --shift-heading-level-by=NUMBER,
+    ShiftHeadingLevelBy(i32),
     /// --indented-code-classes=STRING
     IndentedCodeClasses(String),
     /// -F PROGRAM --filter=PROGRAM
@@ -257,7 +260,9 @@ impl PandocOption {
             ParseRaw => pandoc.args(&["--parse-raw"]),
             Smart => pandoc.args(&["--smart"]),
             OldDashes => pandoc.args(&["--old-dashes"]),
+            #[allow(deprecated)]
             BaseHeaderLevel(n) => pandoc.args(&[&format!("--base-header-level={}", n)]),
+            ShiftHeadingLevelBy(n) => pandoc.args(&[&format!("--shift-heading-level-by={}", n)]),
             IndentedCodeClasses(ref s) => pandoc.args(&[&format!("--indented-code-classes={}", s)]),
             Filter(ref program) => pandoc.args(&[&format!("--filter={}", program.display())]),
             Normalize => pandoc.args(&["--normalize"]),
