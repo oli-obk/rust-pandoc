@@ -428,6 +428,8 @@ pub enum OutputFormat {
     Beamer,
     /// ConTeXt
     Context,
+    /// PDF (via LaTeX)
+    Pdf,
     /// Groff man
     Man,
     /// MediaWiki markup
@@ -496,6 +498,7 @@ impl std::fmt::Display for OutputFormat {
             Latex => write!(fmt, "latex"),
             Beamer => write!(fmt, "beamer"),
             Context => write!(fmt, "context"),
+            Pdf => write!(fmt, "pdf"),
             Man => write!(fmt, "man"),
             MediaWiki => write!(fmt, "mediawiki"),
             Dokuwiki => write!(fmt, "dokuwiki"),
@@ -1003,7 +1006,10 @@ impl Pandoc {
                 cmd.arg("-o").arg(filename);
             }
             OutputKind::Pipe => {
-                cmd.stdout(std::process::Stdio::piped());
+                match self.output_format.as_ref().map(|t| &t.0 ) {
+                    Some(OutputFormat::Pdf) => cmd.arg("-o").arg("-").stdout(std::process::Stdio::piped()),
+                    _ => cmd.stdout(std::process::Stdio::piped()),
+                };
             }
         }
 
