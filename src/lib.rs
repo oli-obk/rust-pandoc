@@ -1116,10 +1116,7 @@ impl Pandoc {
 
         match output_kind {
             Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(name)),
-            Some(OutputKind::Pipe) => match String::from_utf8(output) {
-                Ok(string) => Ok(PandocOutput::ToBuffer(string)),
-                Err(err) => Err(PandocError::from(err.utf8_error())),
-            },
+            Some(OutputKind::Pipe) => Ok(PandocOutput::ToBuffer(output)),
             None => Err(PandocError::NoOutputSpecified),
         }
     }
@@ -1129,14 +1126,12 @@ impl Pandoc {
 pub enum PandocOutput {
     /// The results of the pandoc operation are stored in `Path`
     ToFile(PathBuf),
-    /// The results of the pandoc operation are returned as a `String`
-    ToBuffer(String),
+    /// The results of the pandoc operation are returned as a `Vec<u8>`
+    ToBuffer(Vec<u8>),
 }
 
 /// Possible errors that can occur before or during pandoc execution
 pub enum PandocError {
-    /// conversion from UTF-8 failed; includes valid-up-to byte count.
-    BadUtf8Conversion(usize),
     /// some kind of IO-Error
     IoErr(std::io::Error),
     /// pandoc execution failed, provide output from stderr
@@ -1158,12 +1153,6 @@ impl std::convert::From<std::io::Error> for PandocError {
     }
 }
 
-impl std::convert::From<std::str::Utf8Error> for PandocError {
-    fn from(error: std::str::Utf8Error) -> Self {
-        PandocError::BadUtf8Conversion(error.valid_up_to())
-    }
-}
-
 impl std::fmt::Debug for PandocError {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
         match *self {
@@ -1178,11 +1167,6 @@ impl std::fmt::Debug for PandocError {
             PandocError::PandocNotFound => {
                 write!(fmt, "Pandoc not found, did you forget to install pandoc?")
             }
-            PandocError::BadUtf8Conversion(byte) => write!(
-                fmt,
-                "UTF-8 conversion of pandoc output failed after byte {}.",
-                byte
-            ),
         }
     }
 }
@@ -1202,7 +1186,6 @@ impl std::error::Error for PandocError {
             NoOutputSpecified => "No output file was specified",
             NoInputSpecified => "No input files were specified",
             PandocNotFound => "Pandoc not found",
-            BadUtf8Conversion(_) => "UTF-8 conversion of pandoc output failed",
         }
     }
 
