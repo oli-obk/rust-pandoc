@@ -1006,8 +1006,10 @@ impl Pandoc {
                 cmd.arg("-o").arg(filename);
             }
             OutputKind::Pipe => {
-                match self.output_format.as_ref().map(|t| &t.0 ) {
-                    Some(OutputFormat::Pdf) => cmd.arg("-o").arg("-").stdout(std::process::Stdio::piped()),
+                match self.output_format {
+                    Some((OutputFormat::Pdf, ..)) => {
+                        cmd.arg("-o").arg("-").stdout(std::process::Stdio::piped())
+                    }
                     _ => cmd.stdout(std::process::Stdio::piped()),
                 };
             }
@@ -1111,14 +1113,19 @@ impl Pandoc {
     /// configured:
     pub fn execute(mut self) -> Result<PandocOutput, PandocError> {
         self.preprocess()?;
+        let output_format = self.output_format.clone();
         let output_kind = self.output.clone();
         let output = self.run()?;
 
         match output_kind {
             Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(name)),
-            Some(OutputKind::Pipe) => match String::from_utf8(output) {
-                Ok(string) => Ok(PandocOutput::ToBuffer(string)),
-                Err(err) => Err(PandocError::from(err.utf8_error())),
+            Some(OutputKind::Pipe) => match output_format {
+                Some((OutputFormat::Pdf, ..)) => Ok(PandocOutput::ToBufferRaw(output)),
+
+                _ => match String::from_utf8(output) {
+                    Ok(string) => Ok(PandocOutput::ToBuffer(string)),
+                    Err(err) => Err(PandocError::from(err.utf8_error())),
+                },
             },
             None => Err(PandocError::NoOutputSpecified),
         }
@@ -1129,8 +1136,12 @@ impl Pandoc {
 pub enum PandocOutput {
     /// The results of the pandoc operation are stored in `Path`
     ToFile(PathBuf),
-    /// The results of the pandoc operation are returned as a `String`
+    /// The results of the pandoc operation are returned as a `String` (constructed from the UTF-8
+    /// stream returned by pandoc). This will be the case for text-based formats.
     ToBuffer(String),
+    /// The results of the pandoc operation are returned as a `Vec<u8>`. This will be the case for
+    /// binary formats such as PDF.
+    ToBufferRaw(Vec<u8>),
 }
 
 /// Possible errors that can occur before or during pandoc execution
