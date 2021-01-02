@@ -1103,8 +1103,8 @@ impl Pandoc {
         match std::mem::replace(&mut self.input_format, None) {
             None => self.input_format = Some((InputFormat::Json, Vec::new())),
             Some((fmt, ext)) => {
-                pre.input_format = Some((fmt, Vec::new()));
-                self.input_format = Some((InputFormat::Json, ext));
+                pre.input_format = Some((fmt, ext));
+                self.input_format = Some((InputFormat::Json, Vec::new()));
             }
         }
         let o = pre.run()?;
