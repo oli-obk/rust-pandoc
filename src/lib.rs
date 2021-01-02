@@ -1216,18 +1216,6 @@ impl std::fmt::Display for PandocError {
 }
 
 impl std::error::Error for PandocError {
-    fn description(&self) -> &str {
-        use crate::PandocError::*;
-        match *self {
-            IoErr(ref e) => e.description(),
-            Err(_) => "Pandoc execution failed",
-            NoOutputSpecified => "No output file was specified",
-            NoInputSpecified => "No input files were specified",
-            PandocNotFound => "Pandoc not found",
-            BadUtf8Conversion(_) => "UTF-8 conversion of pandoc output failed",
-        }
-    }
-
     fn cause(&self) -> Option<&dyn std::error::Error> {
         match *self {
             PandocError::IoErr(ref e) => Some(e),
