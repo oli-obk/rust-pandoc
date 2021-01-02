@@ -373,12 +373,11 @@ impl PandocOption {
             IgnoreArgs => pandoc.args(&["--ignore-args"]),
             Verbose => pandoc.args(&["--verbose"]),
             ResourcePath(ref paths) => {
-                let delimiter = if cfg!(windows) {
-                    ";"
-                } else {
-                    ":"
-                };
-                let paths = paths.iter().map(|path| path.display().to_string()).join(delimiter);
+                let delimiter = if cfg!(windows) { ";" } else { ":" };
+                let paths = paths
+                    .iter()
+                    .map(|path| path.display().to_string())
+                    .join(delimiter);
                 pandoc.args(&[&format!("--resource-path={}", paths)])
             }
         }
