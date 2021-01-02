@@ -1087,7 +1087,7 @@ impl Pandoc {
     }
 
     fn preprocess(&mut self) -> Result<(), PandocError> {
-        let filters = std::mem::replace(&mut self.filters, Vec::new());
+        let filters = std::mem::take(&mut self.filters);
 
         if filters.is_empty() {
             return Ok(());
@@ -1098,9 +1098,9 @@ impl Pandoc {
         pre.latex_path_hint = self.latex_path_hint.clone();
         pre.output = Some(OutputKind::Pipe);
         pre.set_output_format(OutputFormat::Json, Vec::new());
-        pre.input = std::mem::replace(&mut self.input, None);
+        pre.input = self.input.take();
         pre.print_pandoc_cmdline = self.print_pandoc_cmdline;
-        match std::mem::replace(&mut self.input_format, None) {
+        match self.input_format.take() {
             None => self.input_format = Some((InputFormat::Json, Vec::new())),
             Some((fmt, ext)) => {
                 pre.input_format = Some((fmt, ext));
