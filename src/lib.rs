@@ -240,6 +240,14 @@ pub enum PandocOption {
     Verbose,
     /// --resource-path=PATH
     ResourcePath(Vec<PathBuf>),
+    /// +RTS OPTIONS -RTS
+    RuntimeSystem(Vec<PandocRuntimeSystemOption>),
+}
+
+#[derive(Clone, Debug)]
+pub enum PandocRuntimeSystemOption {
+    /// -M<size>
+    MaximumHeapMemory(String),
 }
 
 impl PandocOption {
@@ -379,6 +387,17 @@ impl PandocOption {
                     .map(|path| path.display().to_string())
                     .join(delimiter);
                 pandoc.args(&[&format!("--resource-path={}", paths)])
+            }
+            RuntimeSystem(ref rts_options) => {
+                pandoc.args(&["+RTS"]);
+                for option in rts_options {
+                    match option {
+                        PandocRuntimeSystemOption::MaximumHeapMemory(ref s) => {
+                            pandoc.args(&[&format!("-M{}", s)]);
+                        }
+                    }
+                }
+                pandoc.args(&["-RTS"])
             }
         }
     }
