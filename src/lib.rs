@@ -241,6 +241,21 @@ pub enum PandocOption {
     /// --resource-path=PATH
     ResourcePath(Vec<PathBuf>),
     /// +RTS OPTIONS -RTS
+    ///
+    /// In Pandoc's "A note on security" section of the manual ([link](https://pandoc.org/MANUAL.html#a-note-on-security)), there is a recommendation to set a heap size limit to prevent pathological corner cases.
+    ///
+    /// The full list of "RTS" options can be found in the Haskell "Runtime control" section of the manual ([link](https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/runtime_control.html)).
+    /// The Runtime System options are way more extensive than the -M option, and cover a lot of use-cases that aren't needed while using pandoc in a production setting.
+    ///
+    /// ## Example Usage
+    ///
+    /// ```
+    /// let mut pandoc = pandoc::new();
+    /// pandoc.add_option(pandoc::PandocOption::RuntimeSystem(vec![
+    ///   // Limit the heap size to 512 MB while processing an arbitrary input file.
+    ///   pandoc::PandocRuntimeSystemOption::MaximumHeapMemory("512M".to_string()),
+    /// ]));
+    /// ```
     RuntimeSystem(Vec<PandocRuntimeSystemOption>),
 }
 
