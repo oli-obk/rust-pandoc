@@ -82,6 +82,7 @@ pub enum Tld {
 }
 
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub enum PandocOption {
     /// --data-dir=DIRECTORY
     DataDir(PathBuf),
@@ -260,6 +261,7 @@ pub enum PandocOption {
 }
 
 #[derive(Clone, Debug)]
+#[non_exhaustive]
 pub enum PandocRuntimeSystemOption {
     /// -M<size>
     MaximumHeapMemory(String),
@@ -443,6 +445,7 @@ impl std::fmt::Display for DocumentClass {
 
 /// typesafe access to -t FORMAT, -w FORMAT, --to=FORMAT, --write=FORMAT
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum OutputFormat {
     /// native Haskell
     Native,
@@ -573,6 +576,7 @@ impl std::fmt::Display for OutputFormat {
 
 /// typesafe access to -f FORMAT, -r FORMAT, --from=FORMAT, --read=FORMAT
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum InputFormat {
     /// native Haskell
     Native,
@@ -646,6 +650,7 @@ impl std::fmt::Display for InputFormat {
 
 #[allow(missing_docs)]
 #[derive(Debug, Clone)]
+#[non_exhaustive]
 pub enum MarkdownExtension {
     EscapedLineBreaks,
     BlankBeforeHeader,
