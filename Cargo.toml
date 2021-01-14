@@ -1,6 +1,6 @@
 [package]
 name = "pandoc"
-version = "0.8.2"
+version = "0.8.3"
 edition = "2018"
 authors = [
   "Oliver Schneider <rust-pandoc61914191@oli-obk.de>",
