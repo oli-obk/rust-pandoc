@@ -309,7 +309,7 @@ impl PandocOption {
             PrintDefaultDataFile(ref f) => {
                 pandoc.args(&[&format!("--print-default-data-file={}", f.display())])
             }
-            NoWrap => pandoc.args(&["--no-wrap"]),
+            NoWrap => pandoc.args(&["--wrap=none"]),
             Columns(n) => pandoc.args(&[&format!("--columns={}", n)]),
             TableOfContents => pandoc.args(&["--table-of-contents"]),
             TableOfContentsDepth(d) => pandoc.args(&[&format!("--toc-depth={}", d)]),
