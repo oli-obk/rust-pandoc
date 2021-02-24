@@ -186,7 +186,10 @@ pub enum PandocOption {
     /// --reference-odt=FILENAME
     ReferenceOdt(PathBuf),
     /// --reference-docx=FILENAME
+    #[deprecated(note = "replaced by ReferenceDoc")]
     ReferenceDocx(PathBuf),
+    /// --reference-doc=FILENAME
+    ReferenceDoc(PathBuf),
     /// --epub-stylesheet=FILENAME
     EpubStylesheet(PathBuf),
     /// --epub-cover-image=FILENAME
@@ -348,8 +351,12 @@ impl PandocOption {
             TitlePrefix(ref s) => pandoc.args(&[format!("--title-prefix={}", s)]),
             Css(ref url) => pandoc.args(&[format!("--css={}", url)]),
             ReferenceOdt(ref file) => pandoc.args(&[format!("--reference-odt={}", file.display())]),
+            #[allow(deprecated)]
             ReferenceDocx(ref file) => {
                 pandoc.args(&[&format!("--reference-docx={}", file.display())])
+            }
+            ReferenceDoc(ref file) => {
+                pandoc.args(&[&format!("--reference-doc={}", file.display())])
             }
             EpubStylesheet(ref file) => {
                 pandoc.args(&[&format!("--epub-stylesheet={}", file.display())])
