@@ -204,6 +204,8 @@ pub enum PandocOption {
     PdfEngine(PathBuf),
     /// --pdf-engine-opt=STRING
     PdfEngineOpt(String),
+    /// --citeproc
+    Citeproc,
     /// --bibliography=FILE
     Bibliography(PathBuf),
     /// --csl=FILE
@@ -375,6 +377,7 @@ impl PandocOption {
                 pandoc.args(&[&format!("--pdf-engine={}", program.display())])
             }
             PdfEngineOpt(ref s) => pandoc.args(&[&format!("--pdf-engine-opt={}", s)]),
+            Citeproc => pandoc.args(&["--citeproc"]),
             Bibliography(ref file) => pandoc.args(&[&format!("--bibliography={}", file.display())]),
             Csl(ref file) => pandoc.args(&[&format!("--csl={}", file.display())]),
             CitationAbbreviations(ref f) => {
