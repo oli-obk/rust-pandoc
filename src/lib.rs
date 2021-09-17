@@ -1034,7 +1034,7 @@ impl Pandoc {
         for (key, val) in self.args {
             cmd.arg(format!("--{}={}", key, val));
         }
-        let path: String = Iterator::intersperse(
+        let path: String = Itertools::intersperse(
             self.latex_path_hint
                 .iter()
                 .chain(self.pandoc_path_hint.iter())
