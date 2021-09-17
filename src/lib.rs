@@ -308,9 +308,9 @@ impl PandocOption {
             Standalone => pandoc.args(&["--standalone"]),
             Template(ref p) => pandoc.args(&[&format!("--template={}", p.display())]),
             Meta(ref k, Some(ref v)) => pandoc.args(&["-M", &format!("{}:{}", k, v)]),
-            Meta(ref k, None) => pandoc.args(&["-M", &k]),
+            Meta(ref k, None) => pandoc.args(&["-M", k]),
             Var(ref k, Some(ref v)) => pandoc.args(&["-V", &format!("{}:{}", k, v)]),
-            Var(ref k, None) => pandoc.args(&["-V", &k]),
+            Var(ref k, None) => pandoc.args(&["-V", k]),
             PrintDefaultTemplate(ref f) => {
                 pandoc.args(&[&format!("--print-default-template={}", f)])
             }
@@ -1034,20 +1034,21 @@ impl Pandoc {
         for (key, val) in self.args {
             cmd.arg(format!("--{}={}", key, val));
         }
-        let path: String = self
-            .latex_path_hint
-            .iter()
-            .chain(self.pandoc_path_hint.iter())
-            .map(|p| p.to_str().expect("non-utf8 path"))
-            .chain(PANDOC_PATH.iter().cloned())
-            .chain(LATEX_PATH.iter().cloned())
-            .chain(
-                [env::var("PATH").unwrap()]
-                    .iter()
-                    .map(std::borrow::Borrow::borrow),
-            )
-            .intersperse(PATH_DELIMIT)
-            .collect();
+        let path: String = Iterator::intersperse(
+            self.latex_path_hint
+                .iter()
+                .chain(self.pandoc_path_hint.iter())
+                .map(|p| p.to_str().expect("non-utf8 path"))
+                .chain(PANDOC_PATH.iter().cloned())
+                .chain(LATEX_PATH.iter().cloned())
+                .chain(
+                    [env::var("PATH").unwrap()]
+                        .iter()
+                        .map(std::borrow::Borrow::borrow),
+                ),
+            PATH_DELIMIT,
+        )
+        .collect();
         cmd.env("PATH", path);
         let output = self.output.ok_or(PandocError::NoOutputSpecified)?;
         let input = self.input.ok_or(PandocError::NoInputSpecified)?;
