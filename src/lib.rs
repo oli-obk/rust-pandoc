@@ -86,6 +86,8 @@ pub enum Tld {
 pub enum PandocOption {
     /// --data-dir=DIRECTORY
     DataDir(PathBuf),
+    /// --defaults=FILE
+    Defaults(PathBuf),
     /// --strict
     Strict,
     /// -R --parse-raw
@@ -290,6 +292,7 @@ impl PandocOption {
                 pandoc.args(&[&format!("--number-offset={}", nums)])
             }
             DataDir(ref dir) => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
+            Defaults(ref p) => pandoc.args(&[&format!("--defaults={}", p.display())]),
             Strict => pandoc.args(&["--strict"]),
             ParseRaw => pandoc.args(&["--parse-raw"]),
             Smart => pandoc.args(&["--smart"]),
