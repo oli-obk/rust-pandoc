@@ -38,7 +38,7 @@ const PATH_DELIMIT: &str = ":";
 use std::env;
 use std::process::Command;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum TrackChanges {
     Accept,
     Reject,
@@ -55,7 +55,7 @@ impl std::fmt::Display for TrackChanges {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum EmailObfuscation {
     None,
     Javascript,
@@ -74,14 +74,14 @@ impl std::fmt::Display for EmailObfuscation {
 
 pub type URL = String;
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Tld {
     Chapter,
     Section,
     Part,
 }
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 #[non_exhaustive]
 pub enum PandocOption {
     /// --data-dir=DIRECTORY
@@ -269,7 +269,7 @@ pub enum PandocOption {
     RuntimeSystem(Vec<PandocRuntimeSystemOption>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 #[non_exhaustive]
 pub enum PandocRuntimeSystemOption {
     /// -M<size>
