@@ -720,6 +720,7 @@ pub enum MarkdownExtension {
     LinkAttributes,
     MmdHeaderIdentifiers,
     CompactDefinitionLists,
+    RebaseRelativePaths,
 }
 
 impl std::fmt::Display for MarkdownExtension {
@@ -778,6 +779,7 @@ impl std::fmt::Display for MarkdownExtension {
             LinkAttributes => write!(fmt, "link_attributes"),
             MmdHeaderIdentifiers => write!(fmt, "mmd_header_identifiers"),
             CompactDefinitionLists => write!(fmt, "compact_definition_lists"),
+            RebaseRelativePaths => write!(fmt, "rebase_relative_paths"),
         }
     }
 }
