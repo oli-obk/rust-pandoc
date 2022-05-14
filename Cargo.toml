@@ -18,4 +18,4 @@ description = "a library API that wraps calls to the pandoc 2.x executable"
 itertools = "0.8"
 
 [features]
-rtf = []
+input-format-rtf = []
