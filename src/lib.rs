@@ -613,6 +613,7 @@ pub enum InputFormat {
     /// reStructuredText
     Rst,
     /// Rich text format
+    #[cfg(feature = "rtf")]
     Rtf,
     /// HTML
     Html,
@@ -650,6 +651,7 @@ impl std::fmt::Display for InputFormat {
             MarkdownGithub => write!(fmt, "markdown_github"),
             Commonmark => write!(fmt, "commonmark"),
             Rst => write!(fmt, "rst"),
+            #[cfg(feature = "rtf")]
             Rtf => write!(fmt, "rtf"),
             Html => write!(fmt, "html"),
             Latex => write!(fmt, "latex"),

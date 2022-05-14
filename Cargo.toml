@@ -16,3 +16,6 @@ description = "a library API that wraps calls to the pandoc 2.x executable"
 
 [dependencies]
 itertools = "0.8"
+
+[features]
+rtf = []
