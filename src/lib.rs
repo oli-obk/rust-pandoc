@@ -612,6 +612,9 @@ pub enum InputFormat {
     Textile,
     /// reStructuredText
     Rst,
+    /// Rich text format \
+    /// *Only available as of `pandoc 2.14.2 (2021-08-21)`*
+    Rtf,
     /// HTML
     Html,
     /// DocBook
@@ -648,6 +651,7 @@ impl std::fmt::Display for InputFormat {
             MarkdownGithub => write!(fmt, "markdown_github"),
             Commonmark => write!(fmt, "commonmark"),
             Rst => write!(fmt, "rst"),
+            Rtf => write!(fmt, "rtf"),
             Html => write!(fmt, "html"),
             Latex => write!(fmt, "latex"),
             MediaWiki => write!(fmt, "mediawiki"),
