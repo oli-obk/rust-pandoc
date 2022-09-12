@@ -479,6 +479,8 @@ pub enum OutputFormat {
     MarkdownGithub,
     /// CommonMark markdown
     Commonmark,
+    /// CommonMark markdown with extensions
+    CommonmarkX,
     /// reStructuredText
     Rst,
     /// XHTML 1
@@ -541,12 +543,14 @@ pub enum OutputFormat {
     S5,
     /// the path of a custom lua writer (see Custom writers)
     Lua(String),
+    /// Other
+    Other(String),
 }
 
 impl std::fmt::Display for OutputFormat {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         use crate::OutputFormat::*;
-        match *self {
+        match self {
             Native => write!(fmt, "native"),
             Json => write!(fmt, "json"),
             Plain => write!(fmt, "plain"),
@@ -555,6 +559,7 @@ impl std::fmt::Display for OutputFormat {
             MarkdownPhpextra => write!(fmt, "markdown_phpextra"),
             MarkdownGithub => write!(fmt, "markdown_github"),
             Commonmark => write!(fmt, "commonmark"),
+            CommonmarkX => write!(fmt, "commonmark_x"),
             Rst => write!(fmt, "rst"),
             Html => write!(fmt, "html"),
             Html5 => write!(fmt, "html5"),
@@ -586,6 +591,7 @@ impl std::fmt::Display for OutputFormat {
             Revealjs => write!(fmt, "revealjs"),
             S5 => write!(fmt, "s5"),
             Lua(_) => unimplemented!(),
+            Other(f) => write!(fmt, "{}", f),
         }
     }
 }
@@ -608,6 +614,8 @@ pub enum InputFormat {
     MarkdownGithub,
     /// CommonMark markdown
     Commonmark,
+    /// CommonMark markdown with extensions
+    CommonmarkX,
     /// Textile
     Textile,
     /// reStructuredText
@@ -637,12 +645,14 @@ pub enum InputFormat {
     Haddock,
     /// LaTeX
     Latex,
+    /// Other
+    Other(String),
 }
 
 impl std::fmt::Display for InputFormat {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         use crate::InputFormat::*;
-        match *self {
+        match self {
             Native => write!(fmt, "native"),
             Json => write!(fmt, "json"),
             Markdown => write!(fmt, "markdown"),
@@ -650,6 +660,7 @@ impl std::fmt::Display for InputFormat {
             MarkdownPhpextra => write!(fmt, "markdown_phpextra"),
             MarkdownGithub => write!(fmt, "markdown_github"),
             Commonmark => write!(fmt, "commonmark"),
+            CommonmarkX => write!(fmt, "commonmark_x"),
             Rst => write!(fmt, "rst"),
             Rtf => write!(fmt, "rtf"),
             Html => write!(fmt, "html"),
@@ -664,6 +675,7 @@ impl std::fmt::Display for InputFormat {
             DocBook => write!(fmt, "docbook"),
             T2t => write!(fmt, "t2t"),
             Twiki => write!(fmt, "twiki"),
+            Other(f) => write!(fmt, "{}", f),
         }
     }
 }
@@ -672,12 +684,15 @@ impl std::fmt::Display for InputFormat {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum MarkdownExtension {
+    Smart,
+    Attributes,
     EscapedLineBreaks,
     BlankBeforeHeader,
     HeaderAttributes,
     AutoIdentifiers,
     ImplicitHeaderReferences,
     BlankBeforeBlockQuote,
+    FencedDivs,
     FencedCodeBlocks,
     BacktickCodeBlocks,
     FencedCodeAttributes,
@@ -700,10 +715,12 @@ pub enum MarkdownExtension {
     Subscript,
     InlineCodeAttributes,
     TexMathDollars,
+    RawAttribute,
     RawHtml,
     MarkdownInHtmlBlocks,
     NativeDivs,
     NativeSpans,
+    BracketedSpans,
     RawTex,
     LatexMacros,
     ShortcutReferenceLinks,
@@ -725,18 +742,22 @@ pub enum MarkdownExtension {
     MmdHeaderIdentifiers,
     CompactDefinitionLists,
     RebaseRelativePaths,
+    Other(String),
 }
 
 impl std::fmt::Display for MarkdownExtension {
     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         use crate::MarkdownExtension::*;
-        match *self {
+        match self {
+            Smart => write!(fmt, "smart"),
+            Attributes => write!(fmt, "attributes"),
             EscapedLineBreaks => write!(fmt, "escaped_line_breaks"),
             BlankBeforeHeader => write!(fmt, "blank_before_header"),
             HeaderAttributes => write!(fmt, "header_attributes"),
             AutoIdentifiers => write!(fmt, "auto_identifiers"),
             ImplicitHeaderReferences => write!(fmt, "implicit_header_references"),
             BlankBeforeBlockQuote => write!(fmt, "blank_before_block_quote"),
+            FencedDivs => write!(fmt, "fenced_divs"),
             FencedCodeBlocks => write!(fmt, "fenced_code_blocks"),
             BacktickCodeBlocks => write!(fmt, "backtick_code_blocks"),
             FencedCodeAttributes => write!(fmt, "fenced_code_attributes"),
@@ -759,10 +780,12 @@ impl std::fmt::Display for MarkdownExtension {
             Subscript => write!(fmt, "subscript"),
             InlineCodeAttributes => write!(fmt, "inline_code_attributes"),
             TexMathDollars => write!(fmt, "tex_math_dollars"),
+            RawAttribute => write!(fmt, "raw_attribute"),
             RawHtml => write!(fmt, "raw_html"),
             MarkdownInHtmlBlocks => write!(fmt, "markdown_in_html_blocks"),
             NativeDivs => write!(fmt, "native_divs"),
             NativeSpans => write!(fmt, "native_spans"),
+            BracketedSpans => write!(fmt, "bracketed_spans"),
             RawTex => write!(fmt, "raw_tex"),
             LatexMacros => write!(fmt, "latex_macros"),
             ShortcutReferenceLinks => write!(fmt, "shortcut_reference_links"),
@@ -784,6 +807,7 @@ impl std::fmt::Display for MarkdownExtension {
             MmdHeaderIdentifiers => write!(fmt, "mmd_header_identifiers"),
             CompactDefinitionLists => write!(fmt, "compact_definition_lists"),
             RebaseRelativePaths => write!(fmt, "rebase_relative_paths"),
+            Other(e) => write!(fmt, "{}", e),
         }
     }
 }
@@ -1117,7 +1141,9 @@ impl Pandoc {
         }
     }
 
-    fn arg<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
+    /// Add a raw command-line argument. You should generally use one of the
+    /// convenience functions instead.
+    pub fn arg<T: AsRef<str> + ?Sized, U: AsRef<str> + ?Sized>(
         &mut self,
         key: &T,
         value: &U,
