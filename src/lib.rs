@@ -267,6 +267,15 @@ pub enum PandocOption {
     /// ]));
     /// ```
     RuntimeSystem(Vec<PandocRuntimeSystemOption>),
+    /// --sandbox
+    ///
+    /// [This option is strongly recommended for any use-case
+    /// involving untrusted user
+    /// input.](https://pandoc.org/MANUAL.html#option--sandbox) Note
+    /// that it does require a pandoc binary compiled with the
+    /// `embed_data_files` option, in order to process some formats
+    /// such as docx without external file access.
+    Sandbox,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -432,6 +441,7 @@ impl PandocOption {
                 }
                 pandoc.args(&["-RTS"])
             }
+            Sandbox => pandoc.args(&["--sandbox"])
         }
     }
 }
