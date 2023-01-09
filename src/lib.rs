@@ -276,6 +276,9 @@ pub enum PandocOption {
     /// `embed_data_files` option, in order to process some formats
     /// such as docx without external file access.
     Sandbox,
+    /// Manually specify line endings: crlf (Windows), lf (macOS/Linux/UNIX), or native
+    /// (line endings appropriate to the OS on which pandoc is being run). The default is native.
+    EOL(String),
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -441,7 +444,8 @@ impl PandocOption {
                 }
                 pandoc.args(&["-RTS"])
             }
-            Sandbox => pandoc.args(&["--sandbox"])
+            Sandbox => pandoc.args(&["--sandbox"]),
+            EOL(ref eol) => pandoc.args(&[&format!("--eol={}", eol)]),
         }
     }
 }
