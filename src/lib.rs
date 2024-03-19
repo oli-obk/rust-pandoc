@@ -1234,7 +1234,7 @@ impl Pandoc {
         match output_kind {
             Some(OutputKind::File(name)) => Ok(PandocOutput::ToFile(name)),
             Some(OutputKind::Pipe) => match output_format {
-                Some((OutputFormat::Pdf, ..)) => Ok(PandocOutput::ToBufferRaw(output)),
+                Some((OutputFormat::Pdf | OutputFormat::Docx, ..)) => Ok(PandocOutput::ToBufferRaw(output)),
 
                 _ => match String::from_utf8(output) {
                     Ok(string) => Ok(PandocOutput::ToBuffer(string)),
