@@ -159,7 +159,8 @@ pub enum PandocOption {
     Ascii,
     /// --reference-links
     ReferenceLinks,
-    /// --atx-headers
+    /// --atx-headers deprecated,
+    /// --markdown-headings=atx
     AtxHeaders,
     /// --top-level-division=
     TopLevelDivision(Tld),
@@ -353,7 +354,7 @@ impl PandocOption {
             HtmlQTags => pandoc.args(&["--html-q-tags"]),
             Ascii => pandoc.args(&["--ascii"]),
             ReferenceLinks => pandoc.args(&["--reference-links"]),
-            AtxHeaders => pandoc.args(&["--atx-headers"]),
+            AtxHeaders => pandoc.args(&["--markdown-headings=atx"]),
             TopLevelDivision(Chapter) => pandoc.args(&["--top-level-division=chapter"]),
             TopLevelDivision(Section) => pandoc.args(&["--top-level-division=section"]),
             TopLevelDivision(Part) => pandoc.args(&["--top-level-division=part"]),
