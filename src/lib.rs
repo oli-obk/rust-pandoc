@@ -7,16 +7,6 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::str;
 
-/// path to pandoc executable
-#[cfg(windows)]
-const PANDOC_PATH: &[&str] = &[
-    // this compiles the user's name into the binary, maybe not the greatest idea?
-    concat!(env!("LOCALAPPDATA"), r#"\Pandoc\"#),
-];
-/// path to pandoc executable
-#[cfg(not(windows))]
-const PANDOC_PATH: &[&str] = &[];
-
 /// path where miktex executables can be found
 #[cfg(windows)]
 const LATEX_PATH: &[&str] = &[
@@ -1084,12 +1074,20 @@ impl Pandoc {
         for (key, val) in self.args {
             cmd.arg(format!("--{}={}", key, val));
         }
+
+        #[cfg(windows)]
+        let os_specific_paths: &[PathBuf] = &[
+            PathBuf::from(env::var("LOCALAPPDATA").expect("LOCALAPPDATA not set")).join(r#"\Pandoc\"#)
+        ];
+        #[cfg(not(windows))]
+        let os_specific_paths: &[PathBuf] = &[];
+
         let path: String = Itertools::intersperse(
             self.latex_path_hint
                 .iter()
                 .chain(self.pandoc_path_hint.iter())
+                .chain(os_specific_paths)
                 .map(|p| p.to_str().expect("non-utf8 path"))
-                .chain(PANDOC_PATH.iter().cloned())
                 .chain(LATEX_PATH.iter().cloned())
                 .chain(
                     [env::var("PATH").unwrap()]
