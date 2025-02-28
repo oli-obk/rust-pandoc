@@ -292,68 +292,68 @@ impl PandocOption {
                         format!("{}, {}", b, n)
                     }
                 });
-                pandoc.args(&[&format!("--number-offset={}", nums)])
+                pandoc.args([&format!("--number-offset={}", nums)])
             }
-            DataDir(ref dir) => pandoc.args(&[&format!("--data-dir={}", dir.display())]),
-            Defaults(ref p) => pandoc.args(&[&format!("--defaults={}", p.display())]),
-            Strict => pandoc.args(&["--strict"]),
-            ParseRaw => pandoc.args(&["--parse-raw"]),
-            Smart => pandoc.args(&["--smart"]),
-            OldDashes => pandoc.args(&["--old-dashes"]),
+            DataDir(ref dir) => pandoc.args([&format!("--data-dir={}", dir.display())]),
+            Defaults(ref p) => pandoc.args([&format!("--defaults={}", p.display())]),
+            Strict => pandoc.args(["--strict"]),
+            ParseRaw => pandoc.args(["--parse-raw"]),
+            Smart => pandoc.args(["--smart"]),
+            OldDashes => pandoc.args(["--old-dashes"]),
             #[allow(deprecated)]
-            BaseHeaderLevel(n) => pandoc.args(&[&format!("--base-header-level={}", n)]),
-            ShiftHeadingLevelBy(n) => pandoc.args(&[&format!("--shift-heading-level-by={}", n)]),
-            IndentedCodeClasses(ref s) => pandoc.args(&[&format!("--indented-code-classes={}", s)]),
-            Filter(ref program) => pandoc.args(&[&format!("--filter={}", program.display())]),
-            LuaFilter(ref script) => pandoc.args(&[&format!("--lua-filter={}", script.display())]),
-            Normalize => pandoc.args(&["--normalize"]),
-            PreserveTabs => pandoc.args(&["--preserve-tabs"]),
-            TabStop(n) => pandoc.args(&[&format!("--tab-stop={}", n)]),
-            TrackChanges(ref v) => pandoc.args(&[&format!("--track-changes={}", v)]),
-            ExtractMedia(ref p) => pandoc.args(&[&format!("--extract-media={}", p.display())]),
-            Standalone => pandoc.args(&["--standalone"]),
-            Template(ref p) => pandoc.args(&[&format!("--template={}", p.display())]),
-            Meta(ref k, Some(ref v)) => pandoc.args(&["-M", &format!("{}:{}", k, v)]),
-            Meta(ref k, None) => pandoc.args(&["-M", k]),
-            Var(ref k, Some(ref v)) => pandoc.args(&["-V", &format!("{}:{}", k, v)]),
-            Var(ref k, None) => pandoc.args(&["-V", k]),
+            BaseHeaderLevel(n) => pandoc.args([&format!("--base-header-level={}", n)]),
+            ShiftHeadingLevelBy(n) => pandoc.args([&format!("--shift-heading-level-by={}", n)]),
+            IndentedCodeClasses(ref s) => pandoc.args([&format!("--indented-code-classes={}", s)]),
+            Filter(ref program) => pandoc.args([&format!("--filter={}", program.display())]),
+            LuaFilter(ref script) => pandoc.args([&format!("--lua-filter={}", script.display())]),
+            Normalize => pandoc.args(["--normalize"]),
+            PreserveTabs => pandoc.args(["--preserve-tabs"]),
+            TabStop(n) => pandoc.args([&format!("--tab-stop={}", n)]),
+            TrackChanges(ref v) => pandoc.args([&format!("--track-changes={}", v)]),
+            ExtractMedia(ref p) => pandoc.args([&format!("--extract-media={}", p.display())]),
+            Standalone => pandoc.args(["--standalone"]),
+            Template(ref p) => pandoc.args([&format!("--template={}", p.display())]),
+            Meta(ref k, Some(ref v)) => pandoc.args(["-M", &format!("{}:{}", k, v)]),
+            Meta(ref k, None) => pandoc.args(["-M", k]),
+            Var(ref k, Some(ref v)) => pandoc.args(["-V", &format!("{}:{}", k, v)]),
+            Var(ref k, None) => pandoc.args(["-V", k]),
             PrintDefaultTemplate(ref f) => {
-                pandoc.args(&[&format!("--print-default-template={}", f)])
+                pandoc.args([&format!("--print-default-template={}", f)])
             }
             PrintDefaultDataFile(ref f) => {
-                pandoc.args(&[&format!("--print-default-data-file={}", f.display())])
+                pandoc.args([&format!("--print-default-data-file={}", f.display())])
             }
-            NoWrap => pandoc.args(&["--wrap=none"]),
-            Columns(n) => pandoc.args(&[&format!("--columns={}", n)]),
-            TableOfContents => pandoc.args(&["--table-of-contents"]),
-            TableOfContentsDepth(d) => pandoc.args(&[&format!("--toc-depth={}", d)]),
-            NoHighlight => pandoc.args(&["--no-highlight"]),
-            HighlightStyle(ref s) => pandoc.args(&[&format!("--highlight-style={}", s)]),
+            NoWrap => pandoc.args(["--wrap=none"]),
+            Columns(n) => pandoc.args([&format!("--columns={}", n)]),
+            TableOfContents => pandoc.args(["--table-of-contents"]),
+            TableOfContentsDepth(d) => pandoc.args([&format!("--toc-depth={}", d)]),
+            NoHighlight => pandoc.args(["--no-highlight"]),
+            HighlightStyle(ref s) => pandoc.args([&format!("--highlight-style={}", s)]),
             IncludeInHeader(ref p) => {
-                pandoc.args(&[&format!("--include-in-header={}", p.display())])
+                pandoc.args([&format!("--include-in-header={}", p.display())])
             }
             IncludeBeforeBody(ref p) => {
-                pandoc.args(&[&format!("--include-before-body={}", p.display())])
+                pandoc.args([&format!("--include-before-body={}", p.display())])
             }
             IncludeAfterBody(ref p) => {
-                pandoc.args(&[&format!("--include-after-body={}", p.display())])
+                pandoc.args([&format!("--include-after-body={}", p.display())])
             }
-            SelfContained => pandoc.args(&["--self-contained"]),
-            Offline => pandoc.args(&["--offline"]),
-            Html5 => pandoc.args(&["--html5"]),
-            HtmlQTags => pandoc.args(&["--html-q-tags"]),
-            Ascii => pandoc.args(&["--ascii"]),
-            ReferenceLinks => pandoc.args(&["--reference-links"]),
-            AtxHeaders => pandoc.args(&["--markdown-headings=atx"]),
-            TopLevelDivision(Chapter) => pandoc.args(&["--top-level-division=chapter"]),
-            TopLevelDivision(Section) => pandoc.args(&["--top-level-division=section"]),
-            TopLevelDivision(Part) => pandoc.args(&["--top-level-division=part"]),
-            NumberSections => pandoc.args(&["--number-sections"]),
-            NoTexLigatures => pandoc.args(&["--no-tex-ligatures"]),
-            Listings => pandoc.args(&["--listings"]),
-            Incremental => pandoc.args(&["--incremental"]),
+            SelfContained => pandoc.args(["--self-contained"]),
+            Offline => pandoc.args(["--offline"]),
+            Html5 => pandoc.args(["--html5"]),
+            HtmlQTags => pandoc.args(["--html-q-tags"]),
+            Ascii => pandoc.args(["--ascii"]),
+            ReferenceLinks => pandoc.args(["--reference-links"]),
+            AtxHeaders => pandoc.args(["--markdown-headings=atx"]),
+            TopLevelDivision(Chapter) => pandoc.args(["--top-level-division=chapter"]),
+            TopLevelDivision(Section) => pandoc.args(["--top-level-division=section"]),
+            TopLevelDivision(Part) => pandoc.args(["--top-level-division=part"]),
+            NumberSections => pandoc.args(["--number-sections"]),
+            NoTexLigatures => pandoc.args(["--no-tex-ligatures"]),
+            Listings => pandoc.args(["--listings"]),
+            Incremental => pandoc.args(["--incremental"]),
             SlideLevel(n) => pandoc.args(&[format!("--slide-level={}", n)]),
-            SectionDivs => pandoc.args(&["--section-divs"]),
+            SectionDivs => pandoc.args(["--section-divs"]),
             DefaultImageExtension(ref s) => {
                 pandoc.args(&[format!("--default-image-extension={}", s)])
             }
@@ -364,79 +364,79 @@ impl PandocOption {
             ReferenceOdt(ref file) => pandoc.args(&[format!("--reference-odt={}", file.display())]),
             #[allow(deprecated)]
             ReferenceDocx(ref file) => {
-                pandoc.args(&[&format!("--reference-docx={}", file.display())])
+                pandoc.args([&format!("--reference-docx={}", file.display())])
             }
             ReferenceDoc(ref file) => {
-                pandoc.args(&[&format!("--reference-doc={}", file.display())])
+                pandoc.args([&format!("--reference-doc={}", file.display())])
             }
             EpubStylesheet(ref file) => {
-                pandoc.args(&[&format!("--epub-stylesheet={}", file.display())])
+                pandoc.args([&format!("--epub-stylesheet={}", file.display())])
             }
             EpubCoverImage(ref file) => {
-                pandoc.args(&[&format!("--epub-cover-image={}", file.display())])
+                pandoc.args([&format!("--epub-cover-image={}", file.display())])
             }
             EpubMetadata(ref file) => {
-                pandoc.args(&[&format!("--epub-metadata={}", file.display())])
+                pandoc.args([&format!("--epub-metadata={}", file.display())])
             }
             EpubEmbedFont(ref file) => {
-                pandoc.args(&[&format!("--epub-embed-font={}", file.display())])
+                pandoc.args([&format!("--epub-embed-font={}", file.display())])
             }
-            EpubChapterLevel(num) => pandoc.args(&[&format!("--epub-chapter-level={}", num)]),
+            EpubChapterLevel(num) => pandoc.args([&format!("--epub-chapter-level={}", num)]),
             PdfEngine(ref program) => {
-                pandoc.args(&[&format!("--pdf-engine={}", program.display())])
+                pandoc.args([&format!("--pdf-engine={}", program.display())])
             }
-            PdfEngineOpt(ref s) => pandoc.args(&[&format!("--pdf-engine-opt={}", s)]),
-            Citeproc => pandoc.args(&["--citeproc"]),
-            Bibliography(ref file) => pandoc.args(&[&format!("--bibliography={}", file.display())]),
-            Csl(ref file) => pandoc.args(&[&format!("--csl={}", file.display())]),
+            PdfEngineOpt(ref s) => pandoc.args([&format!("--pdf-engine-opt={}", s)]),
+            Citeproc => pandoc.args(["--citeproc"]),
+            Bibliography(ref file) => pandoc.args([&format!("--bibliography={}", file.display())]),
+            Csl(ref file) => pandoc.args([&format!("--csl={}", file.display())]),
             CitationAbbreviations(ref f) => {
-                pandoc.args(&[&format!("--citation-abbreviations={}", f.display())])
+                pandoc.args([&format!("--citation-abbreviations={}", f.display())])
             }
-            Natbib => pandoc.args(&["--natbib"]),
-            Biblatex => pandoc.args(&["--biblatex"]),
-            LatexMathML(Some(ref url)) => pandoc.args(&[&format!("--latexmathml={}", url)]),
-            AsciiMathML(Some(ref url)) => pandoc.args(&[&format!("--asciimathml={}", url)]),
-            MathML(Some(ref url)) => pandoc.args(&[&format!("--mathml={}", url)]),
-            MimeTex(Some(ref url)) => pandoc.args(&[&format!("--mimetex={}", url)]),
-            WebTex(Some(ref url)) => pandoc.args(&[&format!("--webtex={}", url)]),
-            JsMath(Some(ref url)) => pandoc.args(&[&format!("--jsmath={}", url)]),
-            MathJax(Some(ref url)) => pandoc.args(&[&format!("--mathjax={}", url)]),
-            Katex(Some(ref url)) => pandoc.args(&[&format!("--katex={}", url)]),
-            LatexMathML(None) => pandoc.args(&["--latexmathml"]),
-            AsciiMathML(None) => pandoc.args(&["--asciimathml"]),
-            MathML(None) => pandoc.args(&["--mathml"]),
-            MimeTex(None) => pandoc.args(&["--mimetex"]),
-            WebTex(None) => pandoc.args(&["--webtex"]),
-            JsMath(None) => pandoc.args(&["--jsmath"]),
-            MathJax(None) => pandoc.args(&["--mathjax"]),
-            Katex(None) => pandoc.args(&["--katex"]),
-            KatexStylesheet(ref url) => pandoc.args(&[&format!("--katex-stylesheet={}", url)]),
-            GladTex => pandoc.args(&["--gladtex"]),
-            Trace => pandoc.args(&["--trace"]),
-            DumpArgs => pandoc.args(&["--dump-args"]),
-            IgnoreArgs => pandoc.args(&["--ignore-args"]),
-            Verbose => pandoc.args(&["--verbose"]),
+            Natbib => pandoc.args(["--natbib"]),
+            Biblatex => pandoc.args(["--biblatex"]),
+            LatexMathML(Some(ref url)) => pandoc.args([&format!("--latexmathml={}", url)]),
+            AsciiMathML(Some(ref url)) => pandoc.args([&format!("--asciimathml={}", url)]),
+            MathML(Some(ref url)) => pandoc.args([&format!("--mathml={}", url)]),
+            MimeTex(Some(ref url)) => pandoc.args([&format!("--mimetex={}", url)]),
+            WebTex(Some(ref url)) => pandoc.args([&format!("--webtex={}", url)]),
+            JsMath(Some(ref url)) => pandoc.args([&format!("--jsmath={}", url)]),
+            MathJax(Some(ref url)) => pandoc.args([&format!("--mathjax={}", url)]),
+            Katex(Some(ref url)) => pandoc.args([&format!("--katex={}", url)]),
+            LatexMathML(None) => pandoc.args(["--latexmathml"]),
+            AsciiMathML(None) => pandoc.args(["--asciimathml"]),
+            MathML(None) => pandoc.args(["--mathml"]),
+            MimeTex(None) => pandoc.args(["--mimetex"]),
+            WebTex(None) => pandoc.args(["--webtex"]),
+            JsMath(None) => pandoc.args(["--jsmath"]),
+            MathJax(None) => pandoc.args(["--mathjax"]),
+            Katex(None) => pandoc.args(["--katex"]),
+            KatexStylesheet(ref url) => pandoc.args([&format!("--katex-stylesheet={}", url)]),
+            GladTex => pandoc.args(["--gladtex"]),
+            Trace => pandoc.args(["--trace"]),
+            DumpArgs => pandoc.args(["--dump-args"]),
+            IgnoreArgs => pandoc.args(["--ignore-args"]),
+            Verbose => pandoc.args(["--verbose"]),
             ResourcePath(ref paths) => {
                 let delimiter = if cfg!(windows) { ";" } else { ":" };
                 let paths = paths
                     .iter()
                     .map(|path| path.display().to_string())
                     .join(delimiter);
-                pandoc.args(&[&format!("--resource-path={}", paths)])
+                pandoc.args([&format!("--resource-path={}", paths)])
             }
             RuntimeSystem(ref rts_options) => {
-                pandoc.args(&["+RTS"]);
+                pandoc.args(["+RTS"]);
                 for option in rts_options {
                     match option {
                         PandocRuntimeSystemOption::MaximumHeapMemory(ref s) => {
-                            pandoc.args(&[&format!("-M{}", s)]);
+                            pandoc.args([&format!("-M{}", s)]);
                         }
                     }
                 }
-                pandoc.args(&["-RTS"])
+                pandoc.args(["-RTS"])
             }
-            Sandbox => pandoc.args(&["--sandbox"]),
-            EOL(ref eol) => pandoc.args(&[&format!("--eol={}", eol)]),
+            Sandbox => pandoc.args(["--sandbox"]),
+            EOL(ref eol) => pandoc.args([&format!("--eol={}", eol)]),
         }
     }
 }
